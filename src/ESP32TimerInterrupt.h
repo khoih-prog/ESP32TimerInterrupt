@@ -5,7 +5,7 @@
  * 
  * Built by Khoi Hoang https://github.com/khoih-prog/ESP32TimerInterrupt
  * Licensed under MIT license
- * Version: 1.0.0
+ * Version: 1.0.2
  * The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers   
  * are based on 64 bits counters and 16 bit prescalers
  * The timer counters can be configured to count up or down and support automatic reload and software reload 
@@ -15,6 +15,8 @@
  * Version Modified By   Date      Comments
  * ------- -----------  ---------- -----------
  *  1.0.0   K Hoang      21/11/2019 Initial coding
+ *  1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
+ *  1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
 ****************************************************************************************/
 
 #ifndef ESP32TimerInterrupt_h
