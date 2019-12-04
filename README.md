@@ -2,28 +2,28 @@
 
 This library enables you to use Interrupt from Hardware Timers on an ESP32-based board.
 
-Why do we need this Hardware Timer Interrupt?
+***Why do we need this Hardware Timer Interrupt?***
 
-Imagine you have a system with a mission-critical function, measuring water level and control the sump pump or doing something much more important. You normally use a software timer to poll, or even place the function in loop(). But what if another function is blocking the loop() or setup().
+Imagine you have a system with a `mission-critical` function, measuring water level and control the sump pump or doing something much more important. You normally use a `software timer` to poll, or even place the function in loop(). But what if another function is blocking the loop() or setup().
 
 So your function might not be executed, and the result would be disastrous.
 
 You'd prefer to have your function called, no matter what happening with other functions (busy loop, bug, etc.).
 
-The correct choice is to use a Hardware Timer with Interrupt to call your function.
+The correct choice is to use a `Hardware Timer with Interrupt` to call your function.
 
 These hardware timers, using interrupt, still work even if other functions are blocking. Moreover, they are much more precise (certainly depending on clock frequency accuracy) than other software timers using millis() or micros(). That's necessary if you need to measure some data requiring better accuracy.
 
 Functions using normal software timers, relying on loop() and calling millis(), won't work if the loop() or setup() is blocked by certain operation. For example, certain function is blocking while it's connecting to WiFi or some services.
 
-The catch is your function is now part of an ISR (Interrupt Service Routine), and must be lean / mean, and follow certain rules. More to read on:
+The catch is your function is now part of an `ISR (Interrupt Service Routine)`, and must be `lean / mean`, and follow certain rules. More to read on:
 
 https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
 
 **Important Notes:**
-1. Inside the attached function, delay() won’t work and the value returned by millis() will not increment. Serial data received while in the function may be lost. You should declare as volatile any variables that you modify within the attached function.
+1. Inside the attached function, `delay()` won’t work and the value returned by `millis()` will not increment. Serial data received while in the function may be lost. You should declare as volatile any variables that you modify within the attached function.
 
-2. Typically global variables are used to pass data between an ISR and the main program. To make sure variables shared between an ISR and the main program are updated correctly, declare them as volatile.
+2. Typically global variables are used to pass data between an ISR and the main program. To make sure `variables shared between an ISR and the main program` are updated correctly, declare them as `volatile`.
 
 ## Installation
 1. Navigate to (https://github.com/khoih-prog/ESP32TimerInterrupt) page.
@@ -41,13 +41,11 @@ the software program.
 
 ## New from v1.0.2
 
-Now with these new `16 ISR-based timers` (while consumng only 1 hardware timer), the maximum interval is practically unlimited (limited only by unsigned long miliseconds). The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers Therefore, their executions are not blocked by bad-behaving functions / tasks.
+Now with these new `16 ISR-based timers` (while consuming only ***1 hardware timer***), the maximum interval is practically unlimited (limited only by unsigned long miliseconds). The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers Therefore, their executions are not blocked by bad-behaving functions / tasks.
 This important feature is absolutely necessary for mission-critical tasks. 
 
-The `ISR_Timer_Complex` example will demonstrate the nearly perfect accuracy compared to software timers by printing the actual 
-elapsed millisecs of each type of timers.
-Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet
-and Blynk services. You can also have many `(up to 16)` timers to use.
+The `ISR_Timer_Complex` example will demonstrate the nearly perfect accuracy compared to software timers by printing the actual elapsed millisecs of each type of timers.
+Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet and Blynk services. You can also have many `(up to 16)` timers to use.
 This non-being-blocked important feature is absolutely necessary for mission-critical tasks. 
 You'll see blynkTimer Software is blocked while system is connecting to WiFi / Internet / Blynk, as well as by blocking task 
 in loop(), using delay() function as an example. The elapsed time then is very unaccurate
@@ -60,7 +58,7 @@ in loop(), using delay() function as an example. The elapsed time then is very u
 
 Before using any Timer, you have to make sure the Timer has not been used by any other purpose.
 
-Timer0, Timer1, Timer2 and Timer3 are supported for ESP32.
+`Timer0, Timer1, Timer2 and Timer3` are supported for ESP32.
 
 How to use:
 
