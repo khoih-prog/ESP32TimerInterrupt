@@ -39,6 +39,19 @@ The timer counters can be configured to count up or down and support automatic r
 They can also generate alarms when they reach a specific value, defined by the software. The value of the counter can be read by 
 the software program.
 
+## New from v1.0.2
+
+Now with these new `16 ISR-based timers` (while consumng only 1 hardware timer), the maximum interval is practically unlimited (limited only by unsigned long miliseconds). The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers Therefore, their executions are not blocked by bad-behaving functions / tasks.
+This important feature is absolutely necessary for mission-critical tasks. 
+
+The `ISR_Timer_Complex` example will demonstrate the nearly perfect accuracy compared to software timers by printing the actual 
+elapsed millisecs of each type of timers.
+Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet
+and Blynk services. You can also have many `(up to 16)` timers to use.
+This non-being-blocked important feature is absolutely necessary for mission-critical tasks. 
+You'll see blynkTimer Software is blocked while system is connecting to WiFi / Internet / Blynk, as well as by blocking task 
+in loop(), using delay() function as an example. The elapsed time then is very unaccurate
+
 ## Supported Boards
 
 - ESP32
@@ -141,7 +154,7 @@ void loop()
 ```
 ## TO DO
 
-1. Similar library for ESP8266
+1. Search for bug and improvement.
 
 
 ## DONE
@@ -149,6 +162,8 @@ void loop()
 For current version v1.0.0
 
 1. Basic hardware timers for ESP32.
+2. More hardware-initiated software-enabled timers
+3. Longer time interval
 
 
 ## Contributing
