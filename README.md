@@ -1,4 +1,6 @@
-# ESP32 TimerInterrupt Library
+## ESP32 TimerInterrupt Library
+
+[![arduino-library-badge](https://www.ardu-badge.com/badge/ESP32TimerInterrupt.svg?)](https://www.ardu-badge.com/ESP32TimerInterrupt)
 
 This library enables you to use Interrupt from Hardware Timers on an ESP32-based board.
 
@@ -25,13 +27,13 @@ https://www.arduino.cc/reference/en/language/functions/external-interrupts/attac
 
 2. Typically global variables are used to pass data between an ISR and the main program. To make sure `variables shared between an ISR and the main program` are updated correctly, declare them as `volatile`.
 
-## Installation
+### Installation
 1. Navigate to (https://github.com/khoih-prog/ESP32TimerInterrupt) page.
 2. Download the latest release `ESP32TimerInterrupt-master.zip`.
 3. Extract the zip file to `ESP32TimerInterrupt-master` directory 
 4. Copy whole folder to Arduino libraries' directory such as `.Arduino/libraries/ESP32TimerInterrupt-master`.
 
-## More useful Information
+### More useful Information
 
 The ESP32 has two timer groups, each one with two general purpose hardware timers. 
 All the timers are based on 64 bits counters and 16 bit prescalers. 
@@ -39,7 +41,7 @@ The timer counters can be configured to count up or down and support automatic r
 They can also generate alarms when they reach a specific value, defined by the software. The value of the counter can be read by 
 the software program.
 
-## New from v1.0.2
+### New from v1.0.2
 
 Now with these new `16 ISR-based timers` (while consuming only ***1 hardware timer***), the maximum interval is practically unlimited (limited only by unsigned long miliseconds). The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers Therefore, their executions are not blocked by bad-behaving functions / tasks.
 This important feature is absolutely necessary for mission-critical tasks. 
@@ -50,11 +52,11 @@ This non-being-blocked important feature is absolutely necessary for mission-cri
 You'll see blynkTimer Software is blocked while system is connecting to WiFi / Internet / Blynk, as well as by blocking task 
 in loop(), using delay() function as an example. The elapsed time then is very unaccurate
 
-## Supported Boards
+### Supported Boards
 
 - ESP32
 
-## Usage
+### Usage
 
 Before using any Timer, you have to make sure the Timer has not been used by any other purpose.
 
@@ -150,12 +152,12 @@ void loop()
 }
 
 ```
-## TO DO
+### TO DO
 
 1. Search for bug and improvement.
 
 
-## DONE
+### DONE
 
 For current version v1.0.0
 
@@ -164,12 +166,12 @@ For current version v1.0.0
 3. Longer time interval
 
 
-## Contributing
+### Contributing
 If you want to contribute to this project:
 - Report bugs and errors
 - Ask for enhancements
 - Create issues and pull requests
 - Tell other people about this library
 
-## Copyright
+### Copyright
 Copyright 2019- Khoi Hoang
