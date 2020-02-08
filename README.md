@@ -20,7 +20,7 @@ Functions using normal software timers, relying on loop() and calling millis(), 
 
 The catch is your function is now part of an `ISR (Interrupt Service Routine)`, and must be `lean / mean`, and follow certain rules. More to read on:
 
-https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
+[Attach Interrupt](https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/)
 
 **Important Notes:**
 1. Inside the attached function, `delay()` won’t work and the value returned by `millis()` will not increment. Serial data received while in the function may be lost. You should declare as volatile any variables that you modify within the attached function.
@@ -28,6 +28,15 @@ https://www.arduino.cc/reference/en/language/functions/external-interrupts/attac
 2. Typically global variables are used to pass data between an ISR and the main program. To make sure `variables shared between an ISR and the main program` are updated correctly, declare them as `volatile`.
 
 ### Installation
+
+#### Use Arduino Library Manager
+
+The suggested and easiest way is to use `Arduino Library Manager`. Search for `ESP32TimerInterrupt`, then select / install the latest version.
+
+#### Manual Install
+
+The suggested way to install manually is to:
+
 1. Navigate to (https://github.com/khoih-prog/ESP32TimerInterrupt) page.
 2. Download the latest release `ESP32TimerInterrupt-master.zip`.
 3. Extract the zip file to `ESP32TimerInterrupt-master` directory 
