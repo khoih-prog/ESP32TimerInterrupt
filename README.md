@@ -37,7 +37,7 @@ The suggested and easiest way is to use `Arduino Library Manager`. Search for `E
 
 The suggested way to install manually is to:
 
-1. Navigate to (https://github.com/khoih-prog/ESP32TimerInterrupt) page.
+1. Navigate to [ESP32TimerInterrupt](https://github.com/khoih-prog/ESP32TimerInterrupt).
 2. Download the latest release `ESP32TimerInterrupt-master.zip`.
 3. Extract the zip file to `ESP32TimerInterrupt-master` directory 
 4. Copy whole folder to Arduino libraries' directory such as `.Arduino/libraries/ESP32TimerInterrupt-master`.
