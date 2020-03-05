@@ -1,35 +1,35 @@
 /****************************************************************************************************************************
- * ESP32_ISR_Timer.h
- * For ESP32 boards
- * Written by Khoi Hoang
- * 
- * Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
- * Licensed under MIT license
- * Version: 1.0.2
- *
- * The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits 
- * counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload 
- * and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value 
- * of the counter can be read by the software program.
- * 
- * Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by 
- * unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
- * The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
- * Therefore, their executions are not blocked by bad-behaving functions / tasks.
- * This important feature is absolutely necessary for mission-critical tasks. 
- *
- * Based on SimpleTimer - A timer library for Arduino.
- * Author: mromani@ottotecnica.com
- * Copyright (c) 2010 OTTOTECNICA Italy
- * 
- * Based on BlynkTimer.h
- * Author: Volodymyr Shymanskyy
+   ESP32_ISR_Timer.h
+   For ESP32 boards
+   Written by Khoi Hoang
 
- * Version Modified By   Date      Comments
- * ------- -----------  ---------- -----------
- *  1.0.0   K Hoang      23/11/2019 Initial coding
- *  1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
- *  1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
+   Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
+   Licensed under MIT license
+   Version: 1.0.2
+
+   The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
+   counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
+   and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
+   of the counter can be read by the software program.
+
+   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
+   unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
+   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+   Therefore, their executions are not blocked by bad-behaving functions / tasks.
+   This important feature is absolutely necessary for mission-critical tasks.
+
+   Based on SimpleTimer - A timer library for Arduino.
+   Author: mromani@ottotecnica.com
+   Copyright (c) 2010 OTTOTECNICA Italy
+
+   Based on BlynkTimer.h
+   Author: Volodymyr Shymanskyy
+
+   Version Modified By   Date      Comments
+   ------- -----------  ---------- -----------
+    1.0.0   K Hoang      23/11/2019 Initial coding
+    1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
+    1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
 *****************************************************************************************************************************/
 
 
@@ -44,10 +44,10 @@
 
 #if 0
 #ifndef configMINIMAL_STACK_SIZE
-  #define configMINIMAL_STACK_SIZE    2048
+#define configMINIMAL_STACK_SIZE    2048
 #else
-  #undef configMINIMAL_STACK_SIZE
-  #define configMINIMAL_STACK_SIZE    2048
+#undef configMINIMAL_STACK_SIZE
+#define configMINIMAL_STACK_SIZE    2048
 #endif
 #endif
 
@@ -56,11 +56,11 @@
 #include <inttypes.h>
 
 #if defined(ARDUINO)
-  #if ARDUINO >= 100
-    #include <Arduino.h>
-  #else
-    #include <WProgram.h>
-  #endif
+#if ARDUINO >= 100
+#include <Arduino.h>
+#else
+#include <WProgram.h>
+#endif
 #endif
 
 #define ESP32_ISR_Timer ESP32_ISRTimer
@@ -70,14 +70,14 @@ typedef void (*timer_callback_p)(void *);
 
 class ESP32_ISR_Timer {
 
-public:
+  public:
     // maximum number of timers
-    #define MAX_TIMERS        16
+#define MAX_TIMERS        16
     //const static int MAX_TIMERS = 16;
 
     // setTimer() constants
-    #define RUN_FOREVER       0
-    #define RUN_ONCE          1
+#define RUN_FOREVER       0
+#define RUN_ONCE          1
     //const static int RUN_FOREVER = 0;
     //const static int RUN_ONCE = 1;
 
@@ -151,13 +151,15 @@ public:
     unsigned /*IRAM_ATTR*/ getNumTimers();
 
     // returns the number of available timers
-    unsigned /*IRAM_ATTR*/ getNumAvailableTimers() { return MAX_TIMERS - numTimers; };
+    unsigned /*IRAM_ATTR*/ getNumAvailableTimers() {
+      return MAX_TIMERS - numTimers;
+    };
 
-private:
+  private:
     // deferred call constants
-    #define DEFCALL_DONTRUN   0       // don't call the callback function
-    #define DEFCALL_RUNONLY   1       // call the callback function but don't delete the timer
-    #define DEFCALL_RUNANDDEL 2     // call the callback function and delete the timer
+#define DEFCALL_DONTRUN   0       // don't call the callback function
+#define DEFCALL_RUNONLY   1       // call the callback function but don't delete the timer
+#define DEFCALL_RUNANDDEL 2     // call the callback function and delete the timer
 
     // low level function to initialize and enable a new timer
     // returns the timer number (numTimer) on success or
