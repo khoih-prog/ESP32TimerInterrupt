@@ -1,53 +1,69 @@
 /****************************************************************************************************************************
- * examples/ISR_Timer_Complex.ino
- * For ESP32 boards
- * Written by Khoi Hoang
- * 
- * Built by Khoi Hoang https://github.com/khoih-prog/ESP32TimerInterrupt
- * Licensed under MIT license
- * Version: v1.0.2
- * 
- * The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits 
- * counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload 
- * and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value 
- * of the counter can be read by the software program.
- *
- * With Library v1.0.2 of ESP32TimerInterrupt, it now supports 16 ISR-based timers, while consuming only 1 hardware Timer. 
- *
- * Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by 
- * unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
- * The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
- * Therefore, their executions are not blocked by bad-behaving functions / tasks.
- * This important feature is absolutely necessary for mission-critical tasks. 
- * 
- * Notes:
- * Special design is necessary to share data between interrupt code and the rest of your program.
- * Variables usually need to be "volatile" types. Volatile tells the compiler to avoid optimizations that assume 
- * variable can not spontaneously change. Because your function may change variables while your program is using them, 
- * the compiler needs this hint. But volatile alone is often not enough.
- * When accessing shared variables, usually interrupts must be disabled. Even with volatile, 
- * if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly. 
- * If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled 
- * or the entire sequence of your code which accesses the data.
- * Version Modified By   Date      Comments
- * ------- -----------  ---------- -----------
- *  1.0.2   K Hoang      03/12/2019 Ported to ESP32 with v1.0.2 library  
-*****************************************************************************************************************************/
+   ISR_Timer_Complex.ino
+   For ESP32 boards
+   Written by Khoi Hoang
 
-/****************************************************************************************************************************
- * This example will demonstrate the nearly perfect accuracy compared to software timers by printing the actual elapsed millisecs.
- * Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet
- * and Blynk services. You can also have many (up to 16) timers to use.
- * This non-being-blocked important feature is absolutely necessary for mission-critical tasks. 
- * You'll see blynkTimer is blocked while connecting to WiFi / Internet / Blynk, and elapsed time is very unaccurate
- * In this super simple example, you don't see much different after Blynk is connected, because of no competing task is
- * written
-*****************************************************************************************************************************/
+   Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
+   Licensed under MIT license
+   Version: 1.0.3
 
-#ifndef ESP32   //ESP8266
+   The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
+   counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
+   and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
+   of the counter can be read by the software program.
+
+   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
+   unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
+   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+   Therefore, their executions are not blocked by bad-behaving functions / tasks.
+   This important feature is absolutely necessary for mission-critical tasks.
+
+   Based on SimpleTimer - A timer library for Arduino.
+   Author: mromani@ottotecnica.com
+   Copyright (c) 2010 OTTOTECNICA Italy
+
+   Based on BlynkTimer.h
+   Author: Volodymyr Shymanskyy
+
+   Version Modified By   Date      Comments
+   ------- -----------  ---------- -----------
+    1.0.0   K Hoang      23/11/2019 Initial coding
+    1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
+    1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
+    1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
+*****************************************************************************************************************************/
+/*
+   Notes:
+   Special design is necessary to share data between interrupt code and the rest of your program.
+   Variables usually need to be "volatile" types. Volatile tells the compiler to avoid optimizations that assume
+   variable can not spontaneously change. Because your function may change variables while your program is using them,
+   the compiler needs this hint. But volatile alone is often not enough.
+   When accessing shared variables, usually interrupts must be disabled. Even with volatile,
+   if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly.
+   If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled
+   or the entire sequence of your code which accesses the data.
+
+   RPM Measuring uses high frequency hardware timer 1Hz == 1ms) to measure the time from of one rotation, in ms
+   then convert to RPM. One rotation is detected by reading the state of a magnetic REED SW or IR LED Sensor
+   Asssuming LOW is active.
+   For example: Max speed is 600RPM => 10 RPS => minimum 100ms a rotation. We'll use 80ms for debouncing
+   If the time between active state is less than 8ms => consider noise.
+   RPM = 60000 / (rotation time in ms)
+
+   We use interrupt to detect whenever the SW is active, set a flag then use timer to count the time between active state
+
+   This example will demonstrate the nearly perfect accuracy compared to software timers by printing the actual elapsed millisecs.
+   Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet
+   and Blynk services. You can also have many (up to 16) timers to use.
+   This non-being-blocked important feature is absolutely necessary for mission-critical tasks.
+   You'll see blynkTimer is blocked while connecting to WiFi / Internet / Blynk, and elapsed time is very unaccurate
+   In this super simple example, you don't see much different after Blynk is connected, because of no competing task is
+   written
+*/
+
+#ifndef ESP32
 #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
 #endif
-
 
 //These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
 #define TIMER_INTERRUPT_DEBUG      1
@@ -56,12 +72,12 @@
 
 //#define BLYNK_DEBUG
 #ifdef BLYNK_DEBUG
-  #undef BLYNK_DEBUG
+#undef BLYNK_DEBUG
 #endif
 
 //#include <ESP8266WiFi.h>
 #include <esp_wifi.h>
-#include <WiFi.h>  
+#include <WiFi.h>
 
 //#define USE_BLYNK_WM   true
 #define USE_BLYNK_WM   false
@@ -69,37 +85,37 @@
 #define USE_SSL     false
 
 #if USE_SSL
-  #include <WiFiClientSecure.h>
-  #if USE_BLYNK_WM
-    #include <BlynkSimpleEsp32_SSL_WM.h>    //https://github.com/khoih-prog/Blynk_WM
-  #else  
-    #include <BlynkSimpleEsp32_SSL.h>
-  #endif
-
-  #define BLYNK_HARDWARE_PORT     9443
+#include <WiFiClientSecure.h>
+#if USE_BLYNK_WM
+#include <BlynkSimpleEsp32_SSL_WM.h>    //https://github.com/khoih-prog/Blynk_WM
 #else
-  #include <WiFiClient.h>
-  #if USE_BLYNK_WM
-    #include <BlynkSimpleEsp32_WM.h>        //https://github.com/khoih-prog/Blynk_WM
-  #else
-    #include <BlynkSimpleEsp32.h>
-  #endif
+#include <BlynkSimpleEsp32_SSL.h>
+#endif
 
-  #define BLYNK_HARDWARE_PORT     8080
+#define BLYNK_HARDWARE_PORT     9443
+#else
+#include <WiFiClient.h>
+#if USE_BLYNK_WM
+#include <BlynkSimpleEsp32_WM.h>        //https://github.com/khoih-prog/Blynk_WM
+#else
+#include <BlynkSimpleEsp32.h>
+#endif
+
+#define BLYNK_HARDWARE_PORT     8080
 #endif
 
 #if !USE_BLYNK_WM
-  #define USE_LOCAL_SERVER    true
-  
-  // If local server
-  #if USE_LOCAL_SERVER
-    char blynk_server[]   = "yourname.duckdns.org";
-    //char blynk_server[]   = "192.168.2.110";
-  #else
-    char blynk_server[]   = "";
-  #endif
+#define USE_LOCAL_SERVER    true
 
-char auth[]     = "****";   //FireSmokeAlarm
+// If local server
+#if USE_LOCAL_SERVER
+char blynk_server[]   = "yourname.duckdns.org";
+//char blynk_server[]   = "192.168.2.110";
+#else
+char blynk_server[]   = "";
+#endif
+
+char auth[]     = "****";
 char ssid[]     = "****";
 char pass[]     = "****";
 
@@ -130,16 +146,16 @@ BlynkTimer blynkTimer;
 #define LED_TOGGLE_INTERVAL_MS        5000L
 
 void IRAM_ATTR TimerHandler(void)
-{ 
+{
   static bool toggle  = false;
   static bool started = false;
   static int timeRun  = 0;
-  
+
   ISR_Timer.run();
 
   // Toggle LED every LED_TOGGLE_INTERVAL_MS = 5000ms = 5s
   if (++timeRun == (LED_TOGGLE_INTERVAL_MS / HW_TIMER_INTERVAL_MS) )
-  { 
+  {
     timeRun = 0;
 
     if (!started)
@@ -147,7 +163,7 @@ void IRAM_ATTR TimerHandler(void)
       started = true;
       pinMode(LED_BUILTIN, OUTPUT);
     }
-    
+
     //timer interrupt toggles pin LED_BUILTIN
     digitalWrite(LED_BUILTIN, toggle);
     toggle = !toggle;
@@ -162,16 +178,16 @@ void IRAM_ATTR doingSomething2s()
   static unsigned long previousMillis = lastMillis;
   unsigned long deltaMillis = millis() - previousMillis;
 
-  #if (TIMER_INTERRUPT_DEBUG > 0)
-    Serial.print("2s: D ms = ");
-    Serial.println(deltaMillis);
-    #if (TIMER_INTERRUPT_DEBUG > 1)
-      Serial.print("2s: core ");
-      Serial.println(xPortGetCoreID());
-    #endif
-  
-  #endif
-  
+#if (TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print("2s: D ms = ");
+  Serial.println(deltaMillis);
+#if (TIMER_INTERRUPT_DEBUG > 1)
+  Serial.print("2s: core ");
+  Serial.println(xPortGetCoreID());
+#endif
+
+#endif
+
   previousMillis = millis();
 }
 
@@ -182,16 +198,16 @@ void IRAM_ATTR doingSomething5s()
 {
   static unsigned long previousMillis = lastMillis;
   unsigned long deltaMillis = millis() - previousMillis;
-  
-  #if (TIMER_INTERRUPT_DEBUG > 0)
-    Serial.print("5s: D ms = ");
-    Serial.println(deltaMillis);
-    #if (TIMER_INTERRUPT_DEBUG > 1)
-      Serial.print("5s: core ");
-      Serial.println(xPortGetCoreID());
-    #endif
 
-  #endif
+#if (TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print("5s: D ms = ");
+  Serial.println(deltaMillis);
+#if (TIMER_INTERRUPT_DEBUG > 1)
+  Serial.print("5s: core ");
+  Serial.println(xPortGetCoreID());
+#endif
+
+#endif
 
   previousMillis = millis();
 }
@@ -204,10 +220,10 @@ void IRAM_ATTR doingSomething11s()
   static unsigned long previousMillis = lastMillis;
   unsigned long deltaMillis = millis() - previousMillis;
 
-  #if (TIMER_INTERRUPT_DEBUG > 0)
-    Serial.print("11s: D ms = ");
-    Serial.println(deltaMillis);
-  #endif
+#if (TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print("11s: D ms = ");
+  Serial.println(deltaMillis);
+#endif
 
   previousMillis = millis();
 }
@@ -220,18 +236,18 @@ void IRAM_ATTR doingSomething101s()
   static unsigned long previousMillis = lastMillis;
   unsigned long deltaMillis = millis() - previousMillis;
 
-  #if (TIMER_INTERRUPT_DEBUG > 0)
-    Serial.print("101s: D ms = ");
-    Serial.println(deltaMillis);
-  #endif
+#if (TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print("101s: D ms = ");
+  Serial.println(deltaMillis);
+#endif
 
   previousMillis = millis();
 }
 
 #define BLYNK_TIMER_MS        2000L
 
-// Here is software Timer, you can do somewhat fancy stuffs without many issues. 
-// But always avoid 
+// Here is software Timer, you can do somewhat fancy stuffs without many issues.
+// But always avoid
 // 1. Long delay() it just doing nothing and pain-without-gain wasting CPU power.Plan and design your code / strategy ahead
 // 2. Very long "do", "while", "for" loops without predetermined exit time.
 void blynkDoingSomething2s()
@@ -250,16 +266,18 @@ void setup()
   delay(2000);
 
   Serial.begin(115200);
-  Serial.println("\nStarting");
+  while (!Serial);
+  
+  Serial.println("\nStarting ISR_Timer_Complex");
 
   // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
-  blynkTimer.setInterval(BLYNK_TIMER_MS, blynkDoingSomething2s);  
+  blynkTimer.setInterval(BLYNK_TIMER_MS, blynkDoingSomething2s);
 
-  
-  // Using ESP32  => 80 / 160 / 240MHz CPU clock , 
+
+  // Using ESP32  => 80 / 160 / 240MHz CPU clock ,
   // For 64-bit timer counter
   // For 16-bit timer prescaler up to 1024
-  
+
   // Interval in microsecs
   if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
   {
@@ -274,41 +292,41 @@ void setup()
   ISR_Timer.setInterval(5000L, doingSomething5s);
   ISR_Timer.setInterval(11000L, doingSomething11s);
   ISR_Timer.setInterval(101000L, doingSomething101s);
- 
-  #if USE_BLYNK_WM
-    Blynk.begin();
-  #else
-  
-    unsigned long startWiFi = millis();
-    
-    do
-    {
-      delay(200);
-      if ( (WiFi.status() == WL_CONNECTED) || (millis() > startWiFi + WIFI_TIMEOUT) )
-        break;
-    } while (WiFi.status() != WL_CONNECTED);
-    
-    Blynk.config(auth, blynk_server, BLYNK_HARDWARE_PORT);
-    Blynk.connect();
 
-    if (Blynk.connected())
-      Serial.println("Blynk connected");
-    else
-      Serial.println("Blynk not connected yet");
-  #endif
+#if USE_BLYNK_WM
+  Blynk.begin();
+#else
+
+  unsigned long startWiFi = millis();
+
+  do
+  {
+    delay(200);
+    if ( (WiFi.status() == WL_CONNECTED) || (millis() > startWiFi + WIFI_TIMEOUT) )
+      break;
+  } while (WiFi.status() != WL_CONNECTED);
+
+  Blynk.config(auth, blynk_server, BLYNK_HARDWARE_PORT);
+  Blynk.connect();
+
+  if (Blynk.connected())
+    Serial.println("Blynk connected");
+  else
+    Serial.println("Blynk not connected yet");
+#endif
 }
 
 #define BLOCKING_TIME_MS      3000L
 
 void loop()
-{ 
+{
   static bool needWiFiBegin = true;
-  
+
   Blynk.run();
 
   // Blynk.run() in ESP32 doesn't reconnect automatically without below code with WiFi.begin(ssid, pass);
   if (!Blynk.connected())
-  {    
+  {
     if (WiFi.status() != WL_CONNECTED)
     {
       unsigned long startWiFi = millis();
@@ -321,7 +339,7 @@ void loop()
         WiFi.begin(ssid, pass);
         needWiFiBegin = false;
       }
-      
+
       do
       {
         delay(200);
@@ -348,16 +366,16 @@ void loop()
     // Ready for next conn. lost
     //needWiFiBegin = true;
   }
-  
+
 
   // This unadvised blocking task is used to demonstrate the blocking effects onto the execution and accuracy to Software timer
   // You see the time elapse of ISR_Timer still accurate, whereas very unaccurate for Software Timer
   // The time elapse for 2000ms software timer now becomes 3000ms (BLOCKING_TIME_MS)
   // While that of ISR_Timer is still prefect.
   delay(BLOCKING_TIME_MS);
-  
+
   // You need this Software timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary
   // You don't need to and never call ISR_Timer.run() here in the loop(). It's already handled by ISR timer.
   blynkTimer.run();
-  
+
 }

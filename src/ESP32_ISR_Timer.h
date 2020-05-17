@@ -5,7 +5,7 @@
 
    Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
    Licensed under MIT license
-   Version: 1.0.2
+   Version: 1.0.3
 
    The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
    counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
@@ -30,13 +30,13 @@
     1.0.0   K Hoang      23/11/2019 Initial coding
     1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
     1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
+    1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
 *****************************************************************************************************************************/
-
 
 #ifndef ESP32_ISR_TIMER_H
 #define ESP32_ISR_TIMER_H
 
-#ifndef ESP32   //ESP8266
+#ifndef ESP32
 #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
 #endif
 
@@ -68,7 +68,8 @@
 typedef void (*timer_callback)(void);
 typedef void (*timer_callback_p)(void *);
 
-class ESP32_ISR_Timer {
+class ESP32_ISR_Timer 
+{
 
   public:
     // maximum number of timers
@@ -151,7 +152,8 @@ class ESP32_ISR_Timer {
     unsigned /*IRAM_ATTR*/ getNumTimers();
 
     // returns the number of available timers
-    unsigned /*IRAM_ATTR*/ getNumAvailableTimers() {
+    unsigned /*IRAM_ATTR*/ getNumAvailableTimers() 
+    {
       return MAX_TIMERS - numTimers;
     };
 
@@ -169,7 +171,8 @@ class ESP32_ISR_Timer {
     // find the first available slot
     int /*IRAM_ATTR*/ findFirstFreeSlot();
 
-    typedef struct {
+    typedef struct 
+    {
       unsigned long prev_millis;        // value returned by the millis() function in the previous run() call
       void* callback;                   // pointer to the callback function
       void* param;                      // function parameter
@@ -190,5 +193,9 @@ class ESP32_ISR_Timer {
     portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 };
+
+
+#include "ESP32_ISR_Timer-Impl.h"
+
 
 #endif
