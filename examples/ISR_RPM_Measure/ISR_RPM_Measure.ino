@@ -146,8 +146,8 @@ void setup()
   // For 64-bit timer counter
   // For 16-bit timer prescaler up to 1024
 
-  // Interval in microsecs
-  if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS, TimerHandler1))
+  // Interval in microsecs, must multiply to 1000 here or crash
+  if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS * 1000, TimerHandler1))
     Serial.println("Starting  ITimer1 OK, millis() = " + String(millis()));
   else
     Serial.println("Can't set ITimer1. Select another freq., duration or timer");
