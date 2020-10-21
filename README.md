@@ -79,11 +79,52 @@ Another way to install is to:
 4. Copy whole `ESP32TimerInterrupt-master` folder to Arduino libraries' directory such as `~/Arduino/libraries/`.
 
 ### VS Code & PlatformIO:
+
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
 3. Install **ESP32TimerInterrupt** library by using [Library Manager](https://docs.platformio.org/en/latest/librarymanager/). Search for ESP32TimerInterrupt in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
 4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
 
+---
+---
+
+### HOWTO Use analogRead() with ESP32 running WiFi and/or BlueTooth (BT/BLE)
+
+Please have a look at [**ESP_WiFiManager Issue 39: Not able to read analog port when using the autoconnect example**](https://github.com/khoih-prog/ESP_WiFiManager/issues/39) to have more detailed description and solution of the issue.
+
+#### 1.  ESP32 has 2 ADCs, named ADC1 and ADC2
+
+#### 2. ESP32 ADCs functions
+
+- ADC1 controls ADC function for pins **GPIO32-GPIO39**
+- ADC2 controls ADC function for pins **GPIO0, 2, 4, 12-15, 25-27**
+
+#### 3.. ESP32 WiFi uses ADC2 for WiFi functions
+
+Look in file [**adc_common.c**](https://github.com/espressif/esp-idf/blob/master/components/driver/adc_common.c#L61)
+
+> In ADC2, there're two locks used for different cases:
+> 1. lock shared with app and Wi-Fi:
+>    ESP32:
+>         When Wi-Fi using the ADC2, we assume it will never stop, so app checks the lock and returns immediately if failed.
+>    ESP32S2:
+>         The controller's control over the ADC is determined by the arbiter. There is no need to control by lock.
+> 
+> 2. lock shared between tasks:
+>    when several tasks sharing the ADC2, we want to guarantee
+>    all the requests will be handled.
+>    Since conversions are short (about 31us), app returns the lock very soon,
+>    we use a spinlock to stand there waiting to do conversions one by one.
+> 
+> adc2_spinlock should be acquired first, then adc2_wifi_lock or rtc_spinlock.
+
+
+- In order to use ADC2 for other functions, we have to **acquire complicated firmware locks and very difficult to do**
+- So, it's not advisable to use ADC2 with WiFi/BlueTooth (BT/BLE).
+- Use ADC1, and pins GPIO32-GPIO39
+- If somehow it's a must to use those pins serviced by ADC2 (**GPIO0, 2, 4, 12, 13, 14, 15, 25, 26 and 27**), use the **fix mentioned at the end** of [**ESP_WiFiManager Issue 39: Not able to read analog port when using the autoconnect example**](https://github.com/khoih-prog/ESP_WiFiManager/issues/39) to work with ESP32 WiFi/BlueTooth (BT/BLE).
+
+---
 ---
 
 ## More useful Information
