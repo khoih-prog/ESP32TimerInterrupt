@@ -195,7 +195,7 @@ class ESP32_ISR_Timer
 };
 
 
-#include "ESP32_ISR_Timer-Impl.h"
+//#include "ESP32_ISR_Timer-Impl.h"
 
 
 #endif
