@@ -1,6 +1,15 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
 ESP32TimerInterrupt	KEYWORD1
 ESP32Timer	KEYWORD1
 ESP32_ISRTimer KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
 setFrequency	KEYWORD2
 setInterval	KEYWORD2
 attachInterrupt	KEYWORD2
@@ -26,3 +35,7 @@ disableAll  KEYWORD2
 toggle  KEYWORD2
 getNumTimers  KEYWORD2
 getNumAvailableTimers KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################

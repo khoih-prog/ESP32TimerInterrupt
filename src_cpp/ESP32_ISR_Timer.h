@@ -188,6 +188,3 @@ class ESP32_ISR_Timer
     portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 };
 
-
-#include "ESP32_ISR_Timer-Impl.h"
-

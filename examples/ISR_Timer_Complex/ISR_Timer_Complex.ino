@@ -3,9 +3,8 @@
    For ESP32 boards
    Written by Khoi Hoang
 
-   Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
+   Built by Khoi Hoang https://github.com/khoih-prog/ESP32TimerInterrupt
    Licensed under MIT license
-   Version: 1.0.3
 
    The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
    counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
@@ -25,12 +24,15 @@
    Based on BlynkTimer.h
    Author: Volodymyr Shymanskyy
 
+   Version: 1.1.0
+
    Version Modified By   Date      Comments
    ------- -----------  ---------- -----------
     1.0.0   K Hoang      23/11/2019 Initial coding
     1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
     1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
     1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
+    1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
 *****************************************************************************************************************************/
 /*
    Notes:
@@ -62,75 +64,53 @@
 */
 
 #ifndef ESP32
-#error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+  #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
 #endif
-
-//These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
-#define TIMER_INTERRUPT_DEBUG      1
 
 #define BLYNK_PRINT Serial
 
 //#define BLYNK_DEBUG
 #ifdef BLYNK_DEBUG
-#undef BLYNK_DEBUG
+  #undef BLYNK_DEBUG
 #endif
 
-//#include <ESP8266WiFi.h>
-#include <esp_wifi.h>
 #include <WiFi.h>
-
-//#define USE_BLYNK_WM   true
-#define USE_BLYNK_WM   false
 
 #define USE_SSL     false
 
 #if USE_SSL
-#include <WiFiClientSecure.h>
-#if USE_BLYNK_WM
-#include <BlynkSimpleEsp32_SSL_WM.h>    //https://github.com/khoih-prog/Blynk_WM
+  #include <BlynkSimpleEsp32_SSL.h>
+  #define BLYNK_HARDWARE_PORT     9443
 #else
-#include <BlynkSimpleEsp32_SSL.h>
+  #include <BlynkSimpleEsp32.h>
+  #define BLYNK_HARDWARE_PORT     8080
 #endif
 
-#define BLYNK_HARDWARE_PORT     9443
-#else
-#include <WiFiClient.h>
-#if USE_BLYNK_WM
-#include <BlynkSimpleEsp32_WM.h>        //https://github.com/khoih-prog/Blynk_WM
-#else
-#include <BlynkSimpleEsp32.h>
-#endif
-
-#define BLYNK_HARDWARE_PORT     8080
-#endif
-
-#if !USE_BLYNK_WM
 #define USE_LOCAL_SERVER    true
 
 // If local server
 #if USE_LOCAL_SERVER
-char blynk_server[]   = "yourname.duckdns.org";
-//char blynk_server[]   = "192.168.2.110";
+  char blynk_server[]   = "account.duckdns.org";
+  //char blynk_server[]   = "192.168.2.110";
 #else
-char blynk_server[]   = "";
+  char blynk_server[]   = "";
 #endif
 
 char auth[]     = "****";
 char ssid[]     = "****";
 char pass[]     = "****";
 
-#endif
+// These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
+// Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG      0
 
 #include "ESP32TimerInterrupt.h"
 #include "ESP32_ISR_Timer.h"
 
-#ifndef LED_BUILTIN
-#define LED_BUILTIN       2         // Pin D2 mapped to pin GPIO2/ADC12 of ESP32, control on-board LED
-#endif
+#define TIMER_INTERVAL_MS         100
+#define HW_TIMER_INTERVAL_MS      50
 
-#define HW_TIMER_INTERVAL_MS        50
-
-#define WIFI_TIMEOUT      20000L
+#define WIFI_TIMEOUT              20000L
 
 volatile uint32_t lastMillis = 0;
 
@@ -142,6 +122,10 @@ ESP32_ISR_Timer ISR_Timer;
 
 // Ibit Blynk Timer
 BlynkTimer blynkTimer;
+
+#ifndef LED_BUILTIN
+  #define LED_BUILTIN       2         // Pin D2 mapped to pin GPIO2/ADC12 of ESP32, control on-board LED
+#endif
 
 #define LED_TOGGLE_INTERVAL_MS        5000L
 
@@ -268,7 +252,7 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
   
-  Serial.println("\nStarting ISR_Timer_Complex");
+  Serial.println("\nStarting ISR_Timer_Complex on " + String(ARDUINO_BOARD));
 
   // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
   blynkTimer.setInterval(BLYNK_TIMER_MS, blynkDoingSomething2s);
@@ -293,10 +277,6 @@ void setup()
   ISR_Timer.setInterval(11000L, doingSomething11s);
   ISR_Timer.setInterval(101000L, doingSomething101s);
 
-#if USE_BLYNK_WM
-  Blynk.begin();
-#else
-
   unsigned long startWiFi = millis();
 
   do
@@ -313,7 +293,6 @@ void setup()
     Serial.println("Blynk connected");
   else
     Serial.println("Blynk not connected yet");
-#endif
 }
 
 #define BLOCKING_TIME_MS      3000L
@@ -367,7 +346,6 @@ void loop()
     //needWiFiBegin = true;
   }
 
-
   // This unadvised blocking task is used to demonstrate the blocking effects onto the execution and accuracy to Software timer
   // You see the time elapse of ISR_Timer still accurate, whereas very unaccurate for Software Timer
   // The time elapse for 2000ms software timer now becomes 3000ms (BLOCKING_TIME_MS)
@@ -377,5 +355,4 @@ void loop()
   // You need this Software timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary
   // You don't need to and never call ISR_Timer.run() here in the loop(). It's already handled by ISR timer.
   blynkTimer.run();
-
 }

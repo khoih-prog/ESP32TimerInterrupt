@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-   ESP32_ISR_Timer-Impl.h
+   ESP32_ISR_Timer.cpp
    For ESP32 boards
    Written by Khoi Hoang
 
@@ -35,12 +35,7 @@
     1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
 *****************************************************************************************************************************/
 
-#pragma once
-
-#ifndef ESP32
-  #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
-#endif
-
+#include "ESP32_ISR_Timer.h"
 #include "ESP32_ISR_Timer.h"
 #include <string.h>
 

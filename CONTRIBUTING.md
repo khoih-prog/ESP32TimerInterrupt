@@ -2,7 +2,7 @@
 
 ### Reporting Bugs
 
-Please report bugs in ESP32TimerInterrupt if you find them.
+Please report bugs in [ESP32TimerInterrupt Issues](https://github.com/khoih-prog/ESP32TimerInterrupt/issues) if you find them.
 
 However, before reporting a bug please check through the following:
 
@@ -30,8 +30,8 @@ Please ensure to specify the following:
 Arduino IDE version: 1.8.11
 ESP32 Core Version 1.0.4
 ESP32 Dev Module
-OS: Ubuntu 16.04 LTS
-Linux Inspiron 4.4.0-170-generic #199-Ubuntu SMP Thu Nov 14 01:45:04 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+OS: Ubuntu 20.04 LTS
+Linux xy-Inspiron-3593 5.4.0-51-generic #56-Ubuntu SMP Mon Oct 5 14:28:49 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
 
 Context:
 I encountered a crash while using TimerInterrupt.

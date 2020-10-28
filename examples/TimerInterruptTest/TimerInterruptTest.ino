@@ -3,9 +3,8 @@
    For ESP32 boards
    Written by Khoi Hoang
 
-   Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
+   Built by Khoi Hoang https://github.com/khoih-prog/ESP32TimerInterrupt
    Licensed under MIT license
-   Version: 1.0.3
 
    The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
    counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
@@ -25,12 +24,15 @@
    Based on BlynkTimer.h
    Author: Volodymyr Shymanskyy
 
+   Version: 1.1.0
+
    Version Modified By   Date      Comments
    ------- -----------  ---------- -----------
     1.0.0   K Hoang      23/11/2019 Initial coding
     1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
     1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
     1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
+    1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
 *****************************************************************************************************************************/
 /*
    Notes:
@@ -45,10 +47,10 @@
 */
 
 #ifndef ESP32
-#error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+  #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
 #endif
 
-//These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
+// These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
 // Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
 #define TIMER_INTERRUPT_DEBUG      1
 
@@ -115,7 +117,9 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
   
-  Serial.println("\nStarting TimerInterruptTest");
+  delay(100);
+  
+  Serial.println("\nStarting TimerInterruptTest on " + String(ARDUINO_BOARD));
 
   // Using ESP32  => 80 / 160 / 240MHz CPU clock ,
   // For 64-bit timer counter
@@ -132,6 +136,8 @@ void setup()
     Serial.println("Starting  ITimer1 OK, millis() = " + String(millis()));
   else
     Serial.println("Can't set ITimer1. Select another freq. or timer");
+
+  Serial.flush();  
 }
 
 void loop()
@@ -173,6 +179,7 @@ void loop()
       Serial.println("Stop ITimer1, millis() = " + String(millis()));
       ITimer1.stopTimer();
     }
+    
     timer1Stopped = !timer1Stopped;
   }
 }
