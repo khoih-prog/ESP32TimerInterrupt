@@ -44,7 +44,7 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 
 ### Releases v1.1.1
 
-1. Add Change_Interval example to show how to change TimerInterval on-the-fly
+1. Add [**Change_Interval**](examples/Change_Interval) example to show how to change TimerInterval on-the-fly
 2. Add Version String and Change_Interval example to show how to change TimerInterval
 
 ### Releases v1.1.0
@@ -212,7 +212,7 @@ Before using any Timer, you have to make sure the Timer has not been used by any
  8. [RPM_Measure](examples/RPM_Measure)
  9. [SwitchDebounce](examples/SwitchDebounce)
 10. [TimerInterruptTest](examples/TimerInterruptTest)
-11. [Change_Interval](examples/Change_Interval). New.
+11. [**Change_Interval**](examples/Change_Interval). New.
 
 
 ---
@@ -688,7 +688,7 @@ Time = 180018, Timer0Count = 279, , Timer1Count = 139
 
 ### Releases v1.1.1
 
-1. Add Change_Interval example to show how to change TimerInterval on-the-fly
+1. Add [**Change_Interval**](examples/Change_Interval) example to show how to change TimerInterval on-the-fly
 2. Add Version String and Change_Interval example to show how to change TimerInterval
 
 ### Releases v1.1.0
