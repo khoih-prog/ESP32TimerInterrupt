@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-   Argument_None.ino
+   Change_Interval.ino
    For ESP32 boards
    Written by Khoi Hoang
 
@@ -53,8 +53,8 @@
 #endif
 
 // These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
-// Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
-#define TIMER_INTERRUPT_DEBUG      1
+// Don't define TIMER_INTERRUPT_DEBUG > 0. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG      0
 
 #include "ESP32TimerInterrupt.h"
 
@@ -64,16 +64,15 @@
 
 #define PIN_D23             23        // Pin D23 mapped to pin GPIO23/VSPI_MOSI of ESP32
 
+volatile uint32_t Timer0Count = 0;
+volatile uint32_t Timer1Count = 0;
+
 void IRAM_ATTR TimerHandler0(void)
 {
   static bool toggle0 = false;
-  static bool started = false;
 
-  if (!started)
-  {
-    started = true;
-    pinMode(LED_BUILTIN, OUTPUT);
-  }
+  // Flag for checking to be sure ISR is working as Serial.print is not OK here in ISR
+  Timer0Count++;
 
 #if (TIMER_INTERRUPT_DEBUG > 0)
   Serial.println("ITimer0: millis() = " + String(millis()));
@@ -87,26 +86,27 @@ void IRAM_ATTR TimerHandler0(void)
 void IRAM_ATTR TimerHandler1(void)
 {
   static bool toggle1 = false;
-  static bool started = false;
 
-  if (!started)
-  {
-    started = true;
-    pinMode(PIN_D23, OUTPUT);
-  }
+  // Flag for checking to be sure ISR is working as Serial.print is not OK here in ISR
+  Timer1Count++;
 
 #if (TIMER_INTERRUPT_DEBUG > 0)
   Serial.println("ITimer1: millis() = " + String(millis()));
 #endif
 
-  //timer interrupt toggles outputPin
+  //timer interrupt toggles PIN_D23
   digitalWrite(PIN_D23, toggle1);
   toggle1 = !toggle1;
 }
 
-#define TIMER0_INTERVAL_MS        1000
+void printResult(uint32_t currTime)
+{
+  Serial.printf("Time = %ld, Timer0Count = %lu, , Timer1Count = %lu\n", currTime, Timer0Count, Timer1Count);
+}
 
-#define TIMER1_INTERVAL_MS        5000
+#define TIMER0_INTERVAL_MS        500
+
+#define TIMER1_INTERVAL_MS        1000
 
 // Init ESP32 timer 0
 ESP32Timer ITimer0(0);
@@ -114,33 +114,63 @@ ESP32Timer ITimer1(1);
 
 void setup()
 {
+  pinMode(LED_BUILTIN,  OUTPUT);
+  pinMode(PIN_D23,      OUTPUT);
+  
   Serial.begin(115200);
   while (!Serial);
 
   delay(100);
-  
-  Serial.println("\nStarting Argument_None on " + String(ARDUINO_BOARD));
+
+  Serial.println("\nStarting Change_Interval on " + String(ARDUINO_BOARD));
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
   Serial.printf("CPU Frequency = %ld MHz\n", F_CPU / 1000000);
 
-  // Using ESP32  => 80 / 160 / 240MHz CPU clock ,
-  // For 64-bit timer counter
-  // For 16-bit timer prescaler up to 1024
-
   // Interval in microsecs
   if (ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 1000, TimerHandler0))
-    Serial.println("Starting  ITimer0 OK, millis() = " + String(millis()));
+  {
+    Serial.printf("Starting  ITimer0 OK, millis() = %ld\n", millis());
+  }
   else
     Serial.println("Can't set ITimer0. Select another freq. or timer");
 
   // Interval in microsecs
   if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS * 1000, TimerHandler1))
-    Serial.println("Starting  ITimer1 OK, millis() = " + String(millis()));
+  {
+    Serial.printf("Starting  ITimer1 OK, millis() = %ld\n", millis());
+  }
   else
     Serial.println("Can't set ITimer1. Select another freq. or timer");
 }
 
+#define CHECK_INTERVAL_MS     10000L
+#define CHANGE_INTERVAL_MS    20000L
+
 void loop()
 {
+  static uint32_t lastTime = 0;
+  static uint32_t lastChangeTime = 0;
+  static uint32_t currTime;
+  static uint32_t multFactor = 0;
 
+  currTime = millis();
+
+  if (currTime - lastTime > CHECK_INTERVAL_MS)
+  {
+    printResult(currTime);
+    lastTime = currTime;
+
+    if (currTime - lastChangeTime > CHANGE_INTERVAL_MS)
+    {
+      //setInterval(unsigned long interval, timerCallback callback)
+      multFactor = (multFactor + 1) % 2;
+      
+      ITimer0.setInterval(TIMER0_INTERVAL_MS * 1000 * (multFactor + 1), TimerHandler0);
+      ITimer1.setInterval(TIMER1_INTERVAL_MS * 1000 * (multFactor + 1), TimerHandler1);
+
+      Serial.printf("Changing Interval, Timer0 = %lu,  Timer1 = %lu\n", TIMER0_INTERVAL_MS * (multFactor + 1), TIMER1_INTERVAL_MS * (multFactor + 1));
+      
+      lastChangeTime = currTime;
+    }
+  }
 }

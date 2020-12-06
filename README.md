@@ -42,6 +42,11 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ---
 ---
 
+### Releases v1.1.1
+
+1. Add Change_Interval example to show how to change TimerInterval on-the-fly
+2. Add Version String and Change_Interval example to show how to change TimerInterval
+
 ### Releases v1.1.0
 
 1. Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
@@ -62,7 +67,7 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ---
 ---
 
-## Prerequisite
+## Prerequisites
 
 1. [`Arduino IDE 1.8.13+` for Arduino](https://www.arduino.cc/en/Main/Software)
 2. [`ESP32 Core 1.0.4+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards
@@ -90,7 +95,7 @@ Another way to install is to:
 
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
-3. Install [**ESP32TimerInterrupt** library](https://platformio.org/lib/show/6904/ESP32TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/6904/ESP32TimerInterrupt/installation). Search for **ESP32TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
+3. Install [**ESP32TimerInterrupt** library](https://platformio.org/lib/show/11384/ESP32TimerInterrupt) or [**ESP32TimerInterrupt** library](https://platformio.org/lib/show/6904/ESP32TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/11384/ESP32TimerInterrupt/installation). Search for **ESP32TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
 4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
 
 ---
@@ -207,6 +212,7 @@ Before using any Timer, you have to make sure the Timer has not been used by any
  8. [RPM_Measure](examples/RPM_Measure)
  9. [SwitchDebounce](examples/SwitchDebounce)
 10. [TimerInterruptTest](examples/TimerInterruptTest)
+11. [Change_Interval](examples/Change_Interval). New.
 
 
 ---
@@ -405,6 +411,8 @@ void setup()
   while (!Serial);
   
   Serial.println("\nStarting ISR_Timer_Complex on " + String(ARDUINO_BOARD));
+  Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+  Serial.printf("CPU Frequency = %ld MHz\n", F_CPU / 1000000);
 
   // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
   blynkTimer.setInterval(BLYNK_TIMER_MS, blynkDoingSomething2s);
@@ -520,6 +528,8 @@ While software timer, **programmed for 2s, is activated after 3.435s !!!**
 
 ```
 Starting ISR_Timer_Complex on ESP32_DEV
+ESP32TimerInterrupt v1.1.1
+CPU Frequency = 240 MHz
 ESP32TimerInterrupt: _timerNo = 1, _fre = 1000000.00, _count = 0 - 50000
 Starting  ITimer OK, millis() = 2140
 [2341] 
@@ -581,6 +591,8 @@ blynkDoingSomething2s: Delta programmed ms = 2000, actual = 3000
 
 ```
 Starting TimerInterruptTest on ESP32_DEV
+ESP32TimerInterrupt v1.1.1
+CPU Frequency = 240 MHz
 ESP32TimerInterrupt: _timerNo = 0, _fre = 1000000.00, _count = 0 - 1000000
 Starting  ITimer0 OK, millis() = 136
 ESP32TimerInterrupt: _timerNo = 1, _fre = 1000000.00, _count = 0 - 3000000
@@ -632,8 +644,52 @@ ITimer0: millis() = 45008
 Stop ITimer0, millis() = 45009
 
 ```
+
+---
+
+2. The following is the sample terminal output when running example [Change_Interval](examples/Change_Interval) to demonstrate how to change Timer Interval on-the-fly
+
+```
+Starting Change_Interval on ESP32_DEV
+ESP32TimerInterrupt v1.1.1
+CPU Frequency = 240 MHz
+Starting  ITimer0 OK, millis() = 136
+Starting  ITimer1 OK, millis() = 136
+Time = 10001, Timer0Count = 19, , Timer1Count = 9
+Time = 20002, Timer0Count = 39, , Timer1Count = 19
+Changing Interval, Timer0 = 1000,  Timer1 = 2000
+Time = 30003, Timer0Count = 49, , Timer1Count = 24
+Time = 40004, Timer0Count = 59, , Timer1Count = 29
+Changing Interval, Timer0 = 500,  Timer1 = 1000
+Time = 50005, Timer0Count = 79, , Timer1Count = 39
+Time = 60006, Timer0Count = 99, , Timer1Count = 49
+Changing Interval, Timer0 = 1000,  Timer1 = 2000
+Time = 70007, Timer0Count = 109, , Timer1Count = 54
+Time = 80008, Timer0Count = 119, , Timer1Count = 59
+Changing Interval, Timer0 = 500,  Timer1 = 1000
+Time = 90009, Timer0Count = 139, , Timer1Count = 69
+Time = 100010, Timer0Count = 159, , Timer1Count = 79
+Changing Interval, Timer0 = 1000,  Timer1 = 2000
+Time = 110011, Timer0Count = 169, , Timer1Count = 84
+Time = 120012, Timer0Count = 179, , Timer1Count = 89
+Changing Interval, Timer0 = 500,  Timer1 = 1000
+Time = 130013, Timer0Count = 199, , Timer1Count = 99
+Time = 140014, Timer0Count = 219, , Timer1Count = 109
+Changing Interval, Timer0 = 1000,  Timer1 = 2000
+Time = 150015, Timer0Count = 229, , Timer1Count = 114
+Time = 160016, Timer0Count = 239, , Timer1Count = 119
+Changing Interval, Timer0 = 500,  Timer1 = 1000
+Time = 170017, Timer0Count = 259, , Timer1Count = 129
+Time = 180018, Timer0Count = 279, , Timer1Count = 139
+```
+
 ---
 ---
+
+### Releases v1.1.1
+
+1. Add Change_Interval example to show how to change TimerInterval on-the-fly
+2. Add Version String and Change_Interval example to show how to change TimerInterval
 
 ### Releases v1.1.0
 
@@ -668,7 +724,7 @@ Submit issues to: [ESP32TimerInterrupt issues](https://github.com/khoih-prog/ESP
 ## TO DO
 
 1. Search for bug and improvement.
-2. Similar features for remaining Arduino boards suh as SAMD21, SAMD51, SAM-DUE, nRF52
+2. Similar features for remaining Arduino boards such as SAMD21, SAMD51, SAM-DUE, nRF52
 
 
 ## DONE

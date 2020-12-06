@@ -24,7 +24,7 @@
    Based on BlynkTimer.h
    Author: Volodymyr Shymanskyy
 
-   Version: 1.1.0
+   Version: 1.1.1
 
    Version Modified By   Date      Comments
    ------- -----------  ---------- -----------
@@ -33,6 +33,7 @@
     1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
     1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
     1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
+    1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
 *****************************************************************************************************************************/
 /*
    Notes:
@@ -44,15 +45,6 @@
    if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly.
    If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled
    or the entire sequence of your code which accesses the data.
-
-   RPM Measuring uses high frequency hardware timer 1Hz == 1ms) to measure the time from of one rotation, in ms
-   then convert to RPM. One rotation is detected by reading the state of a magnetic REED SW or IR LED Sensor
-   Asssuming LOW is active.
-   For example: Max speed is 600RPM => 10 RPS => minimum 100ms a rotation. We'll use 80ms for debouncing
-   If the time between active state is less than 8ms => consider noise.
-   RPM = 60000 / (rotation time in ms)
-
-   We use interrupt to detect whenever the SW is active, set a flag then use timer to count the time between active state
 
    RPM Measuring uses high frequency hardware timer 1Hz == 1ms) to measure the time from of one rotation, in ms
    then convert to RPM. One rotation is detected by reading the state of a magnetic REED SW or IR LED Sensor
@@ -79,8 +71,7 @@
 unsigned int SWPin = PIN_D23;
 
 #define TIMER0_INTERVAL_MS        1
-#define DEBOUNCING_INTERVAL_MS    80
-
+#define DEBOUNCING_INTERVAL_MS    17
 #define LOCAL_DEBUG               1
 
 // Init ESP32 timer 0
@@ -140,6 +131,8 @@ void setup()
   delay(100);
   
   Serial.println("\nStarting RPM_Measure on " + String(ARDUINO_BOARD));
+  Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+  Serial.printf("CPU Frequency = %ld MHz\n", F_CPU / 1000000);
 
   // Using ESP32  => 80 / 160 / 240MHz CPU clock ,
   // For 64-bit timer counter
