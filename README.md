@@ -46,7 +46,7 @@
   * [  9. RPM_Measure](examples/RPM_Measure)
   * [ 10. SwitchDebounce](examples/SwitchDebounce)
   * [ 11. TimerInterruptTest](examples/TimerInterruptTest)
-* [Example ISR_Timer_Complex](#example-isr_16_timer_complex)
+* [Example ISR_Timer_Complex](#example-isr_timer_complex)
 * [Debug Terminal Output Samples](#debug-terminal-output-samples)
   * [1. ISR_Timer_Complex on ESP32_DEV](#1-isr_timer_complex-on-esp32_dev)
   * [2. TimerInterruptTest on ESP32_DEV](#2-timerinterrupttest-on-esp32_dev)
@@ -65,7 +65,7 @@
 ---
 ---
 
-### Why do we need this [TimerInterrupt library](https://github.com/khoih-prog/TimerInterrupt)
+### Why do we need this [ESP32TimerInterrupt library](https://github.com/khoih-prog/ESP32TimerInterrupt)
 
 ## Features
 
