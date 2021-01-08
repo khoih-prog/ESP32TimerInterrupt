@@ -1,53 +1,61 @@
 
 /****************************************************************************************************************************
-   ESP32TimerInterrupt.h
-   For ESP32 boards
-   Written by Khoi Hoang
+  ESP32TimerInterrupt.h
+  For ESP32 boards
+  Written by Khoi Hoang
 
-   Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
-   Licensed under MIT license
+  Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
+  Licensed under MIT license
 
-   The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
-   counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
-   and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
-   of the counter can be read by the software program.
+  The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
+  counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
+  and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
+  of the counter can be read by the software program.
 
-   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
-   unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
-   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
-   Therefore, their executions are not blocked by bad-behaving functions / tasks.
-   This important feature is absolutely necessary for mission-critical tasks.
+  Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
+  unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
+  The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+  Therefore, their executions are not blocked by bad-behaving functions / tasks.
+  This important feature is absolutely necessary for mission-critical tasks.
 
-   Based on SimpleTimer - A timer library for Arduino.
-   Author: mromani@ottotecnica.com
-   Copyright (c) 2010 OTTOTECNICA Italy
+  Based on SimpleTimer - A timer library for Arduino.
+  Author: mromani@ottotecnica.com
+  Copyright (c) 2010 OTTOTECNICA Italy
 
-   Based on BlynkTimer.h
-   Author: Volodymyr Shymanskyy
+  Based on BlynkTimer.h
+  Author: Volodymyr Shymanskyy
 
-   Version: 1.1.1
+  Version: 1.2.0
 
-   Version Modified By   Date      Comments
-   ------- -----------  ---------- -----------
-    1.0.0   K Hoang      23/11/2019 Initial coding
-    1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
-    1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
-    1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
-    1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
-    1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
+  Version Modified By   Date      Comments
+  ------- -----------  ---------- -----------
+  1.0.0   K Hoang      23/11/2019 Initial coding
+  1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
+  1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
+  1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
+  1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
+  1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
+  1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
 *****************************************************************************************************************************/
 
 #pragma once
+
+#ifndef ESP32TIMERINTERRUPT_H
+#define ESP32TIMERINTERRUPT_H
 
 #ifndef ESP32
   #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
 #endif
 
-#define ESP32_TIMER_INTERRUPT_VERSION       "ESP32TimerInterrupt v1.1.1"
+#ifndef ESP32_TIMER_INTERRUPT_VERSION
+  #define ESP32_TIMER_INTERRUPT_VERSION       "ESP32TimerInterrupt v1.2.0"
+#endif
 
 #ifndef TIMER_INTERRUPT_DEBUG
   #define TIMER_INTERRUPT_DEBUG      0
 #endif
+
+#include "TimerInterrupt_Generic_Debug.h"
 
 #include <esp32-hal-timer.h>
 
@@ -69,7 +77,7 @@
     {(hw_timer_reg_t *)(DR_REG_TIMERGROUP0_BASE + 0x1024),3,1,1,portMUX_INITIALIZER_UNLOCKED}
   };
 
-  typedef void (*voidFuncPtr)(void);
+  typedef void (*voidFuncPtr)();
   static voidFuncPtr __timerInterruptHandlers[4] = {0,0,0,0};
 
   void IRAM_ATTR __timerISR(void * arg)
@@ -107,7 +115,7 @@ typedef ESP32TimerInterrupt ESP32Timer;
 
 #define MAX_ESP32_NUM_TIMERS      4
 
-typedef void (*timer_callback)  (void);
+typedef void (*timer_callback)  ();
 
 
 class ESP32TimerInterrupt
@@ -146,11 +154,9 @@ class ESP32TimerInterrupt
       _frequency  = 1000000;
       _timerCount = (uint64_t) _frequency / frequency;
       // count up
-
-#if (TIMER_INTERRUPT_DEBUG > 0)
-      Serial.println("ESP32TimerInterrupt: _timerNo = " + String(_timerNo) + ", _fre = " + String(_frequency)
-                     + ", _count = " + String((uint32_t) (_timerCount >> 32) ) + " - " + String((uint32_t) (_timerCount)));
-#endif
+      
+      TISR_LOGWARN3(F("ESP32TimerInterrupt: _timerNo ="), _timerNo, F(", _fre ="), _frequency);
+      TISR_LOGWARN3(F("_count ="), (uint32_t) (_timerCount >> 32) , F("-"), (uint32_t) (_timerCount));
 
       // Clock to timer (prescaler) is F_CPU / 3 = 240MHz / 3 = 80MHz
       _timer = timerBegin(_timerNo, F_CPU / (_frequency * 3), true);
@@ -189,7 +195,7 @@ class ESP32TimerInterrupt
       timerDetachInterrupt(_timer);
     }
 
-    void disableTimer(void)
+    void disableTimer()
     {
       timerDetachInterrupt(_timer);
     }
@@ -201,19 +207,19 @@ class ESP32TimerInterrupt
     }
 
     // Duration (in milliseconds). Duration = 0 or not specified => run indefinitely
-    void enableTimer(void)
+    void enableTimer()
     {
       setFrequency(_frequency, _callback);
     }
 
     // Just stop clock source, clear the count
-    void stopTimer(void)
+    void stopTimer()
     {
       timerStop(_timer);
     }
 
     // Just reconnect clock source, start current count from 0
-    void restartTimer(void)
+    void restartTimer()
     {
       timerRestart(_timer);
     }
@@ -224,3 +230,6 @@ class ESP32TimerInterrupt
     };
 
 }; // class ESP32TimerInterrupt
+
+#endif    // ESP32TIMERINTERRUPT_H
+

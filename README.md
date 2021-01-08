@@ -9,11 +9,84 @@
 ---
 ---
 
+## Table of Contents
+
+* [Why do we need this ESP32TimerInterrupt library](#why-do-we-need-this-esp32timerinterrupt-library)
+  * [Features](#features)
+  * [Why using ISR-based Hardware Timer Interrupt is better](#why-using-isr-based-hardware-timer-interrupt-is-better)
+  * [Currently supported Boards](#currently-supported-boards)
+  * [Important Notes about ISR](#important-notes-about-isr)
+* [Changelog](#changelog)
+  * [Releases v1.2.0](#releases-v120)
+  * [Releases v1.1.1](#releases-v111)
+  * [Releases v1.1.0](#releases-v110)
+  * [Releases v1.0.3](#releases-v103)
+  * [Releases v1.0.2](#releases-v102)
+* [Prerequisites](#prerequisites)
+* [Installation](#installation)
+  * [Use Arduino Library Manager](#use-arduino-library-manager)
+  * [Manual Install](#manual-install)
+  * [VS Code & PlatformIO](#vs-code--platformio)
+* [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix-multiple-definitions-linker-error)
+* [HOWTO Use analogRead() with ESP32 running WiFi and/or BlueTooth (BT/BLE)](#howto-use-analogread-with-esp32-running-wifi-andor-bluetooth-btble)
+  * [1. ESP32 has 2 ADCs, named ADC1 and ADC2](#1--esp32-has-2-adcs-named-adc1-and-adc2)
+  * [2. ESP32 ADCs functions](#2-esp32-adcs-functions)
+  * [3. ESP32 WiFi uses ADC2 for WiFi functions](#3-esp32-wifi-uses-adc2-for-wifi-functions)
+* [More useful Information](#more-useful-information)
+* [How to use](#how-to-use)
+* [Examples](#examples)
+  * [  1. Argument_None](examples/Argument_None)
+  * [  2. **Change_Interval**](examples/Change_Interval). New.
+  * [  3. ISR_RPM_Measure](examples/ISR_RPM_Measure)
+  * [  4. ISR_Switch](examples/ISR_Switch)
+  * [  5. ISR_Timer_Complex](examples/ISR_Timer_Complex)
+  * [  6. ISR_Timer_Switch](examples/ISR_Timer_Switch)
+  * [  7. ISR_Timer_4_Switches](examples/ISR_Timer_4_Switches)
+  * [  8. ISR_Timer_Switches](examples/ISR_Timer_Switches)
+  * [  9. RPM_Measure](examples/RPM_Measure)
+  * [ 10. SwitchDebounce](examples/SwitchDebounce)
+  * [ 11. TimerInterruptTest](examples/TimerInterruptTest)
+* [Example ISR_Timer_Complex](#example-isr_16_timer_complex)
+* [Debug Terminal Output Samples](#debug-terminal-output-samples)
+  * [1. ISR_Timer_Complex on ESP32_DEV](#1-isr_timer_complex-on-esp32_dev)
+  * [2. TimerInterruptTest on ESP32_DEV](#2-timerinterrupttest-on-esp32_dev)
+  * [3. Change_Interval on ESP32_DEV](#3-change_interval-on-esp32_dev)
+* [Debug](#debug)
+* [Troubleshooting](#troubleshooting)
+* [Releases](#releases)
+* [Issues](#issues)
+* [TO DO](#to-do)
+* [DONE](#done)
+* [Contributions and Thanks](#contributions-and-thanks)
+* [Contributing](#contributing)
+* [License](#license)
+* [Copyright](#copyright)
+
+---
+---
+
+### Why do we need this [TimerInterrupt library](https://github.com/khoih-prog/TimerInterrupt)
+
 ## Features
 
 This library enables you to use Interrupt from Hardware Timers on an ESP32-based board.
 
-### Why do we need this Hardware Timer Interrupt?
+As **Hardware Timers are rare, and very precious assets** of any board, this library now enables you to use up to **16 ISR-based Timers, while consuming only 1 Hardware Timer**. Timers' interval is very long (**ulong millisecs**).
+
+Now with these new **16 ISR-based timers**, the maximum interval is **practically unlimited** (limited only by unsigned long miliseconds) while **the accuracy is nearly perfect** compared to software timers. 
+
+The most important feature is they're ISR-based timers. Therefore, their executions are **not blocked by bad-behaving functions / tasks**. This important feature is absolutely necessary for mission-critical tasks. 
+
+The [**ISR_Timer_Complex**](examples/ISR_Timer_Complex) example will demonstrate the nearly perfect accuracy compared to software timers by printing the actual elapsed millisecs of each type of timers.
+
+Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet and Blynk services. You can also have many `(up to 16)` timers to use.
+
+This non-being-blocked important feature is absolutely necessary for mission-critical tasks.
+
+You'll see blynkTimer Software is blocked while system is connecting to WiFi / Internet / Blynk, as well as by blocking task 
+in loop(), using delay() function as an example. The elapsed time then is very unaccurate
+
+### Why using ISR-based Hardware Timer Interrupt is better
 
 Imagine you have a system with a **mission-critical** function, measuring water level and control the sump pump or doing something much more important. You normally use a software timer to poll, or even place the function in loop(). But what if another function is **blocking** the loop() or setup().
 
@@ -33,14 +106,28 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 
 ---
 
-#### Important Notes:
+### Currently supported Boards
+
+1. ESP32-based boards
+
+---
+
+### Important Notes about ISR
 
 1. Inside the attached function, **delay() won’t work and the value returned by millis() will not increment.** Serial data received while in the function may be lost. You should declare as **volatile any variables that you modify within the attached function.**
 
 2. Typically global variables are used to pass data between an ISR and the main program. To make sure variables shared between an ISR and the main program are updated correctly, declare them as volatile.
 
+
 ---
 ---
+
+## Changelog
+
+### Releases v1.2.0
+
+1. Add better debug feature.
+2. Optimize code and examples to reduce RAM usage
 
 ### Releases v1.1.1
 
@@ -95,7 +182,7 @@ Another way to install is to:
 
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
-3. Install [**ESP32TimerInterrupt** library](https://platformio.org/lib/show/11384/ESP32TimerInterrupt) or [**ESP32TimerInterrupt** library](https://platformio.org/lib/show/6904/ESP32TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/11384/ESP32TimerInterrupt/installation). Search for **ESP32TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
+3. Install [**ESP32TimerInterrupt** library](https://platformio.org/lib/show/11384/ESP32TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/11384/ESP32TimerInterrupt/installation). Search for **ESP32TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
 4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
 
 ---
@@ -166,13 +253,14 @@ Look in file [**adc_common.c**](https://github.com/espressif/esp-idf/blob/master
 
 ## More useful Information
 
-The ESP32 has two timer groups, each one with two general purpose hardware timers. 
-All the timers are based on 64 bits counters and 16 bit prescalers. 
+The ESP32 has two timer groups, each one with two general purpose hardware timers.  All the timers are based on 64 bits counters and 16 bit prescalers. 
+
 The timer counters can be configured to count up or down and support automatic reload and software reload.
+
 They can also generate alarms when they reach a specific value, defined by the software. The value of the counter can be read by 
 the software program.
 
-## New from v1.0.2
+---
 
 Now with these new `16 ISR-based timers` (while consuming only **1 hardware timer**), the maximum interval is practically unlimited (limited only by unsigned long miliseconds). The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers Therefore, their executions are not blocked by bad-behaving functions / tasks.
 This important feature is absolutely necessary for mission-critical tasks. 
@@ -184,14 +272,9 @@ You'll see blynkTimer Software is blocked while system is connecting to WiFi / I
 in loop(), using delay() function as an example. The elapsed time then is very unaccurate
 
 ---
-
-## Supported Boards
-
-- ESP32
-
 ---
 
-## Usage
+## How to use
 
 Before using any Timer, you have to make sure the Timer has not been used by any other purpose.
 
@@ -258,9 +341,11 @@ char auth[]     = "****";
 char ssid[]     = "****";
 char pass[]     = "****";
 
-// These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
-// Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
-#define TIMER_INTERRUPT_DEBUG      0
+// These define's must be placed at the beginning before #include "TimerInterrupt_Generic.h"
+// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
+// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG         0
+#define _TIMERINTERRUPT_LOGLEVEL_     0
 
 #include "ESP32TimerInterrupt.h"
 #include "ESP32_ISR_Timer.h"
@@ -317,20 +402,18 @@ void IRAM_ATTR TimerHandler(void)
 // Or you can get this run-time error / crash : "Guru Meditation Error: Core 1 panic'ed (Cache disabled but cached memory region accessed)"
 void IRAM_ATTR doingSomething2s()
 {
+#if (TIMER_INTERRUPT_DEBUG > 0)  
   static unsigned long previousMillis = lastMillis;
   unsigned long deltaMillis = millis() - previousMillis;
-
-#if (TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print("2s: D ms = ");
-  Serial.println(deltaMillis);
-#if (TIMER_INTERRUPT_DEBUG > 1)
-  Serial.print("2s: core ");
-  Serial.println(xPortGetCoreID());
-#endif
-
-#endif
-
+  
+  Serial.print("2s: D ms = "); Serial.println(deltaMillis);
+  
   previousMillis = millis();
+#endif
+
+#if (TIMER_INTERRUPT_DEBUG > 1)
+  Serial.print("2s: core "); Serial.println(xPortGetCoreID());
+#endif
 }
 
 // In ESP32, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
@@ -338,20 +421,18 @@ void IRAM_ATTR doingSomething2s()
 // Or you can get this run-time error / crash : "Guru Meditation Error: Core 1 panic'ed (Cache disabled but cached memory region accessed)"
 void IRAM_ATTR doingSomething5s()
 {
+#if (TIMER_INTERRUPT_DEBUG > 0)  
   static unsigned long previousMillis = lastMillis;
   unsigned long deltaMillis = millis() - previousMillis;
-
-#if (TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print("5s: D ms = ");
-  Serial.println(deltaMillis);
-#if (TIMER_INTERRUPT_DEBUG > 1)
-  Serial.print("5s: core ");
-  Serial.println(xPortGetCoreID());
-#endif
-
-#endif
-
+  
+  Serial.print("5s: D ms = "); Serial.println(deltaMillis);
+  
   previousMillis = millis();
+#endif
+  
+#if (TIMER_INTERRUPT_DEBUG > 1)
+  Serial.print("5s: core "); Serial.println(xPortGetCoreID());
+#endif
 }
 
 // In ESP32, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
@@ -359,15 +440,14 @@ void IRAM_ATTR doingSomething5s()
 // Or you can get this run-time error / crash : "Guru Meditation Error: Core 1 panic'ed (Cache disabled but cached memory region accessed)"
 void IRAM_ATTR doingSomething11s()
 {
+#if (TIMER_INTERRUPT_DEBUG > 0)  
   static unsigned long previousMillis = lastMillis;
   unsigned long deltaMillis = millis() - previousMillis;
-
-#if (TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print("11s: D ms = ");
-  Serial.println(deltaMillis);
-#endif
+  
+  Serial.print("11s: D ms = "); Serial.println(deltaMillis);
 
   previousMillis = millis();
+#endif
 }
 
 // In ESP32, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
@@ -375,15 +455,14 @@ void IRAM_ATTR doingSomething11s()
 // Or you can get this run-time error / crash : "Guru Meditation Error: Core 1 panic'ed (Cache disabled but cached memory region accessed)"
 void IRAM_ATTR doingSomething101s()
 {
+#if (TIMER_INTERRUPT_DEBUG > 0)  
   static unsigned long previousMillis = lastMillis;
   unsigned long deltaMillis = millis() - previousMillis;
-
-#if (TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print("101s: D ms = ");
-  Serial.println(deltaMillis);
-#endif
+  
+  Serial.print("101s: D ms = "); Serial.println(deltaMillis);
 
   previousMillis = millis();
+#endif
 }
 
 #define BLYNK_TIMER_MS        2000L
@@ -395,7 +474,10 @@ void IRAM_ATTR doingSomething101s()
 void blynkDoingSomething2s()
 {
   static unsigned long previousMillis = lastMillis;
-  Serial.println("blynkDoingSomething2s: Delta programmed ms = " + String(BLYNK_TIMER_MS) + ", actual = " + String(millis() - previousMillis));
+  
+  Serial.print(F("blynkDoingSomething2s: Delta programmed ms = ")); Serial.print(BLYNK_TIMER_MS);
+  Serial.print(F(", actual = ")); Serial.println(millis() - previousMillis);
+  
   previousMillis = millis();
 }
 
@@ -409,11 +491,11 @@ void setup()
 
   Serial.begin(115200);
   while (!Serial);
-  
-  Serial.println("\nStarting ISR_Timer_Complex on " + String(ARDUINO_BOARD));
-  Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
-  Serial.printf("CPU Frequency = %ld MHz\n", F_CPU / 1000000);
 
+  Serial.print(F("\nStarting ISR_Timer_Complex on ")); Serial.println(ARDUINO_BOARD);
+  Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
+  
   // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
   blynkTimer.setInterval(BLYNK_TIMER_MS, blynkDoingSomething2s);
 
@@ -426,10 +508,11 @@ void setup()
   if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
   {
     lastMillis = millis();
-    Serial.println("Starting  ITimer OK, millis() = " + String(lastMillis));
+    Serial.print(F("Starting ITimer OK, millis() = ")); Serial.println(lastMillis);
   }
   else
-    Serial.println("Can't set ITimer correctly. Select another freq. or interval");
+    Serial.println(F("Can't set ITimer correctly. Select another freq. or interval"));
+
 
   // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
   ISR_Timer.setInterval(2000L, doingSomething2s);
@@ -450,9 +533,9 @@ void setup()
   Blynk.connect();
 
   if (Blynk.connected())
-    Serial.println("Blynk connected");
+    Serial.println(F("Blynk connected"));
   else
-    Serial.println("Blynk not connected yet");
+    Serial.println(F("Blynk not connected yet"));
 }
 
 #define BLOCKING_TIME_MS      3000L
@@ -469,12 +552,12 @@ void loop()
     if (WiFi.status() != WL_CONNECTED)
     {
       unsigned long startWiFi = millis();
-      Serial.println("WiFi not connected. Reconnect");
+      Serial.println(F("WiFi not connected. Reconnect"));
 
       // Need to run again once per conn. lost
       if (needWiFiBegin)
       {
-        Serial.println("WiFi begin again");
+        Serial.println(F("WiFi begin again"));
         WiFi.begin(ssid, pass);
         needWiFiBegin = false;
       }
@@ -494,7 +577,7 @@ void loop()
     else
     {
       // Ready for next conn. lost
-      Serial.println("reset needWiFiBegin");
+      Serial.println(F("reset needWiFiBegin"));
       needWiFiBegin = true;
       Blynk.config(auth, blynk_server, BLYNK_HARDWARE_PORT);
       Blynk.connect();
@@ -507,9 +590,9 @@ void loop()
   }
 
   // This unadvised blocking task is used to demonstrate the blocking effects onto the execution and accuracy to Software timer
-  // You see the time elapse of ISR_Timer still accurate, whereas very unaccurate for Software Timer
+  // You see the time elapse of ESP32_ISR_Timer still accurate, whereas very unaccurate for Software Timer
   // The time elapse for 2000ms software timer now becomes 3000ms (BLOCKING_TIME_MS)
-  // While that of ISR_Timer is still prefect.
+  // While that of ESP32_ISR_Timer is still prefect.
   delay(BLOCKING_TIME_MS);
 
   // You need this Software timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary
@@ -522,13 +605,15 @@ void loop()
 
 ### Debug Terminal Output Samples
 
-1. The following is the sample terminal output when running example [ISR_Timer_Complex](examples/ISR_Timer_Complex) to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy**.  The ISR timer is **programmed for 2s, is activated exactly after 2.000s !!!**
+### 1. ISR_Timer_Complex on ESP32_DEV
+
+The following is the sample terminal output when running example [ISR_Timer_Complex](examples/ISR_Timer_Complex) to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy**.  The ISR timer is **programmed for 2s, is activated exactly after 2.000s !!!**
 
 While software timer, **programmed for 2s, is activated after 3.435s !!!**
 
 ```
 Starting ISR_Timer_Complex on ESP32_DEV
-ESP32TimerInterrupt v1.1.1
+ESP32TimerInterrupt v1.2.0
 CPU Frequency = 240 MHz
 ESP32TimerInterrupt: _timerNo = 1, _fre = 1000000.00, _count = 0 - 50000
 Starting  ITimer OK, millis() = 2140
@@ -587,11 +672,13 @@ blynkDoingSomething2s: Delta programmed ms = 2000, actual = 3000
 
 ---
 
-2. The following is the sample terminal output when running example [TimerInterruptTest](examples/TimerInterruptTest) to demonstrate how to start/stop Hardware Timers.
+### 2. TimerInterruptTest on ESP32_DEV
+
+The following is the sample terminal output when running example [TimerInterruptTest](examples/TimerInterruptTest) to demonstrate how to start/stop Hardware Timers.
 
 ```
 Starting TimerInterruptTest on ESP32_DEV
-ESP32TimerInterrupt v1.1.1
+ESP32TimerInterrupt v1.2.0
 CPU Frequency = 240 MHz
 ESP32TimerInterrupt: _timerNo = 0, _fre = 1000000.00, _count = 0 - 1000000
 Starting  ITimer0 OK, millis() = 136
@@ -647,7 +734,9 @@ Stop ITimer0, millis() = 45009
 
 ---
 
-2. The following is the sample terminal output when running example [Change_Interval](examples/Change_Interval) to demonstrate how to change Timer Interval on-the-fly
+### 3. Change_Interval on ESP32_DEV
+
+The following is the sample terminal output when running example [Change_Interval](examples/Change_Interval) to demonstrate how to change Timer Interval on-the-fly
 
 ```
 Starting Change_Interval on ESP32_DEV
@@ -686,6 +775,39 @@ Time = 180018, Timer0Count = 279, , Timer1Count = 139
 ---
 ---
 
+### Debug
+
+Debug is enabled by default on Serial.
+
+You can also change the debugging level (_TIMERINTERRUPT_LOGLEVEL_) from 0 to 4
+
+```cpp
+// These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
+// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
+// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG         0
+#define _TIMERINTERRUPT_LOGLEVEL_     0
+```
+
+---
+
+### Troubleshooting
+
+If you get compilation errors, more often than not, you may need to install a newer version of the core for Arduino boards.
+
+Sometimes, the library will only work if you update the board core to the latest version because I am using newly added functions.
+
+
+---
+---
+
+## Releases
+
+### Releases v1.2.0
+
+1. Add better debug feature.
+2. Optimize code and examples to reduce RAM usage
+
 ### Releases v1.1.1
 
 1. Add [**Change_Interval**](examples/Change_Interval) example to show how to change TimerInterval on-the-fly
@@ -715,7 +837,7 @@ Time = 180018, Timer0Count = 279, , Timer1Count = 139
 ---
 ---
 
-### Issues ###
+### Issues
 
 Submit issues to: [ESP32TimerInterrupt issues](https://github.com/khoih-prog/ESP32TimerInterrupt/issues)
 
@@ -724,16 +846,15 @@ Submit issues to: [ESP32TimerInterrupt issues](https://github.com/khoih-prog/ESP
 ## TO DO
 
 1. Search for bug and improvement.
-2. Similar features for remaining Arduino boards such as SAMD21, SAMD51, SAM-DUE, nRF52
+
 
 
 ## DONE
 
-For current version v1.1.0
-
 1. Basic hardware timers for ESP32.
 2. More hardware-initiated software-enabled timers
 3. Longer time interval
+4. Similar features for remaining Arduino boards such as SAMD21, SAMD51, SAM-DUE, nRF52, ESP8266, STM32, etc.
 
 ---
 ---

@@ -1,42 +1,46 @@
 /****************************************************************************************************************************
-   ESP32_ISR_Timer-Impl.h
-   For ESP32 boards
-   Written by Khoi Hoang
+  ESP32_ISR_Timer-Impl.h
+  For ESP32 boards
+  Written by Khoi Hoang
 
-   Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
-   Licensed under MIT license
+  Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
+  Licensed under MIT license
 
-   The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
-   counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
-   and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
-   of the counter can be read by the software program.
+  The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
+  counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
+  and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
+  of the counter can be read by the software program.
 
-   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
-   unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
-   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
-   Therefore, their executions are not blocked by bad-behaving functions / tasks.
-   This important feature is absolutely necessary for mission-critical tasks.
+  Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
+  unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
+  The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+  Therefore, their executions are not blocked by bad-behaving functions / tasks.
+  This important feature is absolutely necessary for mission-critical tasks.
 
-   Based on SimpleTimer - A timer library for Arduino.
-   Author: mromani@ottotecnica.com
-   Copyright (c) 2010 OTTOTECNICA Italy
+  Based on SimpleTimer - A timer library for Arduino.
+  Author: mromani@ottotecnica.com
+  Copyright (c) 2010 OTTOTECNICA Italy
 
-   Based on BlynkTimer.h
-   Author: Volodymyr Shymanskyy
+  Based on BlynkTimer.h
+  Author: Volodymyr Shymanskyy
 
-   Version: 1.1.1
+  Version: 1.2.0
 
-   Version Modified By   Date      Comments
-   ------- -----------  ---------- -----------
-    1.0.0   K Hoang      23/11/2019 Initial coding
-    1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
-    1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
-    1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
-    1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
-    1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
+  Version Modified By   Date      Comments
+  ------- -----------  ---------- -----------
+  1.0.0   K Hoang      23/11/2019 Initial coding
+  1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
+  1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
+  1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
+  1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
+  1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
+  1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
 *****************************************************************************************************************************/
 
 #pragma once
+
+#ifndef ISR_TIMER_GENERIC_IMPL_H
+#define ISR_TIMER_GENERIC_IMPL_H
 
 #ifndef ESP32
   #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
@@ -54,7 +58,7 @@ void ESP32_ISR_Timer::init()
 {
   unsigned long current_millis = millis();   //elapsed();
 
-  for (int i = 0; i < MAX_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_TIMERS; i++) 
   {
     memset((void*) &timer[i], 0, sizeof (timer_t));
     timer[i].prev_millis = current_millis;
@@ -68,7 +72,7 @@ void ESP32_ISR_Timer::init()
 
 void IRAM_ATTR ESP32_ISR_Timer::run() 
 {
-  int i;
+  uint8_t i;
   unsigned long current_millis;
 
   // get current time
@@ -153,7 +157,7 @@ int ESP32_ISR_Timer::findFirstFreeSlot()
   }
 
   // return the first slot with no callback (i.e. free)
-  for (int i = 0; i < MAX_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_TIMERS; i++) 
   {
     if (timer[i].callback == NULL) 
     {
@@ -344,7 +348,7 @@ void ESP32_ISR_Timer::enableAll()
   // ESP32 is a multi core / multi processing chip. It is mandatory to disable task switches during modifying shared vars
   portENTER_CRITICAL(&timerMux);
 
-  for (int i = 0; i < MAX_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_TIMERS; i++) 
   {
     if (timer[i].callback != NULL && timer[i].numRuns == RUN_FOREVER) 
     {
@@ -363,7 +367,7 @@ void ESP32_ISR_Timer::disableAll()
   // ESP32 is a multi core / multi processing chip. It is mandatory to disable task switches during modifying shared vars
   portENTER_CRITICAL(&timerMux);
 
-  for (int i = 0; i < MAX_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_TIMERS; i++) 
   {
     if (timer[i].callback != NULL && timer[i].numRuns == RUN_FOREVER) 
     {
@@ -391,3 +395,6 @@ unsigned ESP32_ISR_Timer::getNumTimers()
 {
   return numTimers;
 }
+
+#endif    // ISR_TIMER_GENERIC_IMPL_H
+

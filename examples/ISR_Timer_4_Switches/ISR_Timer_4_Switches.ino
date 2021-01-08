@@ -1,39 +1,40 @@
 /****************************************************************************************************************************
-   ISR_Timer_4_Switches.ino
-   For ESP32 boards
-   Written by Khoi Hoang
-
-   Built by Khoi Hoang https://github.com/khoih-prog/ESP32TimerInterrupt
-   Licensed under MIT license
-
-   The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
-   counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
-   and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
-   of the counter can be read by the software program.
-
-   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
-   unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
-   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
-   Therefore, their executions are not blocked by bad-behaving functions / tasks.
-   This important feature is absolutely necessary for mission-critical tasks.
-
-   Based on SimpleTimer - A timer library for Arduino.
-   Author: mromani@ottotecnica.com
-   Copyright (c) 2010 OTTOTECNICA Italy
-
-   Based on BlynkTimer.h
-   Author: Volodymyr Shymanskyy
-
-   Version: 1.1.1
-
-   Version Modified By   Date      Comments
-   ------- -----------  ---------- -----------
-    1.0.0   K Hoang      23/11/2019 Initial coding
-    1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
-    1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
-    1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
-    1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
-    1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
+  ISR_Timer_4_Switches.ino
+  For ESP32 boards
+  Written by Khoi Hoang
+  
+  Built by Khoi Hoang https://github.com/khoih-prog/ESP32TimerInterrupt
+  Licensed under MIT license
+  
+  The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
+  counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
+  and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
+  of the counter can be read by the software program.
+  
+  Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
+  unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
+  The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+  Therefore, their executions are not blocked by bad-behaving functions / tasks.
+  This important feature is absolutely necessary for mission-critical tasks.
+  
+  Based on SimpleTimer - A timer library for Arduino.
+  Author: mromani@ottotecnica.com
+  Copyright (c) 2010 OTTOTECNICA Italy
+  
+  Based on BlynkTimer.h
+  Author: Volodymyr Shymanskyy
+  
+  Version: 1.2.0
+  
+  Version Modified By   Date      Comments
+  ------- -----------  ---------- -----------
+  1.0.0   K Hoang      23/11/2019 Initial coding
+  1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
+  1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
+  1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
+  1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
+  1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
+  1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
 *****************************************************************************************************************************/
 /* Notes:
    Special design is necessary to share data between interrupt code and the rest of your program.
@@ -103,9 +104,11 @@ char auth[]     = "****";
 char ssid[]     = "****";
 char pass[]     = "****";
 
-// These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
-// Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
-#define TIMER_INTERRUPT_DEBUG      1
+// These define's must be placed at the beginning before #include "TimerInterrupt_Generic.h"
+// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
+// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG         0
+#define _TIMERINTERRUPT_LOGLEVEL_     0
 
 #include "ESP32TimerInterrupt.h"
 
@@ -169,7 +172,7 @@ void IRAM_ATTR Rising3();
 // This is a struct array, used to simplify programming code and eliminate repetitive code
 // It also reduce code size by reduce number of functions, especially important in ISR code in ICACHE_RAM.
 
-typedef void (*isr_func)(void);
+typedef void (*isr_func)();
 
 typedef struct
 {
@@ -357,17 +360,17 @@ void IRAM_ATTR Falling3()
   }
 }
 
-void heartBeatPrint(void)
+void heartBeatPrint()
 {
   static int num = 1;
 
   if (Blynk.connected())
   {
-    Serial.print("B");
+    Serial.print(F("B"));
   }
   else
   {
-    Serial.print("F");
+    Serial.print(F("F"));
   }
 
   if (num == 40)
@@ -377,13 +380,13 @@ void heartBeatPrint(void)
   }
   else if (num++ % 10 == 0)
   {
-    Serial.print(" ");
+    Serial.print(F(" "));
   }
 }
 
 void checkButton()
 {
-  static int index;
+  static uint16_t index;
 
   heartBeatPrint();
 
@@ -399,7 +402,7 @@ void checkButton()
 // Need only one for 4 SWs
 void IRAM_ATTR HWCheckButton()
 {
-  static int index;
+  static uint16_t index;
 
   for (index = 0; index < NUMBER_OF_LAMPS; index++)
   {
@@ -414,7 +417,7 @@ void IRAM_ATTR HWCheckButton()
 void IRAM_ATTR ButtonCheck()
 {
   boolean SwitchState;
-  static int index;
+  static uint16_t index;
 
   for (index = 0; index < NUMBER_OF_LAMPS; index++)
   {
@@ -434,7 +437,7 @@ void IRAM_ATTR ButtonCheck()
 
 void IRAM_ATTR ToggleRelay()
 {
-  static int index;
+  static uint16_t index;
 
   for (index = 0; index < NUMBER_OF_LAMPS; index++)
   {
@@ -446,7 +449,7 @@ void IRAM_ATTR ToggleRelay()
       if (Lamps[index].LampState)
       {
 #if (TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("Toggle OFF Relay " + String(index));
+        Serial.print("Toggle OFF Relay "); Serial.println(index);
 #endif
 
         digitalWrite(Lamps[index].RelayPin, LOW);
@@ -455,7 +458,7 @@ void IRAM_ATTR ToggleRelay()
       else
       {
 #if (TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("Toggle ON Relay " + String(index));
+        Serial.print("Toggle ON Relay "); Serial.println(index);
 #endif
 
         digitalWrite(Lamps[index].RelayPin, HIGH);
@@ -470,11 +473,11 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
   
-  Serial.println("\nStarting ISR_Timer_4_Switches on " + String(ARDUINO_BOARD));
+  Serial.print(F("\nStarting ISR_Timer_4_Switches on ")); Serial.println(ARDUINO_BOARD);
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
-  Serial.printf("CPU Frequency = %ld MHz\n", F_CPU / 1000000);
+  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
 
-  for (int index = 0; index < NUMBER_OF_LAMPS; index++)
+  for (uint16_t index = 0; index < NUMBER_OF_LAMPS; index++)
   {
     pinMode(Lamps[index].RelayPin, OUTPUT);
     digitalWrite(Lamps[index].RelayPin, LOW);
@@ -489,9 +492,11 @@ void setup()
   // Interval in microsecs, so MS to multiply by 1000
   // Be sure to place this HW Timer well ahead blocking calls, because it needs to be initialized.
   if (ITimer1.attachInterruptInterval(TIMER_INTERVAL_MS * 1000, HWCheckButton))
-    Serial.println("Starting  ITimer OK, millis() = " + String(millis()));
+  {
+    Serial.print(F("Starting  ITimer OK, millis() = ")); Serial.println(millis());
+  }
   else
-    Serial.println("Can't set ITimer. Select another freq. or interval");
+    Serial.println(F("Can't set ITimer. Select another freq. or timer"));
 
   unsigned long startWiFi = millis();
 
@@ -508,9 +513,9 @@ void setup()
   Blynk.connect();
 
   if (Blynk.connected())
-    Serial.println("Blynk connected");
+    Serial.println(F("Blynk connected"));
   else
-    Serial.println("Blynk not connected yet");
+    Serial.println(F("Blynk not connected yet"));
 
   // Use only one to check all 4
   Timer.setInterval(buttonInterval, checkButton);

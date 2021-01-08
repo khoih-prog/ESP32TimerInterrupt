@@ -14,7 +14,7 @@ If you don't find anything, please [open a new issue](https://github.com/khoih-p
 
 Please ensure to specify the following:
 
-* Arduino IDE version (e.g. 1.8.11) or Platform.io version
+* Arduino IDE version (e.g. 1.8.13) or Platform.io version
 * `ESP32` Core Version (e.g. ESP32 v1.0.4)
 * `ESP32` Board type (e.g. WEMOS LOLIN32, ESP32 Dev Module, etc.)
 * Contextual information (e.g. what you were trying to achieve)
@@ -27,7 +27,7 @@ Please ensure to specify the following:
 ### Example
 
 ```
-Arduino IDE version: 1.8.11
+Arduino IDE version: 1.8.13
 ESP32 Core Version 1.0.4
 ESP32 Dev Module
 OS: Ubuntu 20.04 LTS

@@ -71,7 +71,7 @@ unsigned int SWPin = PIN_D23;
 #define DEBOUNCING_INTERVAL_MS    100
 #define LONG_PRESS_INTERVAL_MS    5000
 
-#define LOCAL_DEBUG               1
+#define LOCAL_DEBUG               2
 
 // Init ESP32 timer 1
 ESP32Timer ITimer1(1);
@@ -84,8 +84,12 @@ void IRAM_ATTR TimerHandler1()
   static unsigned int debounceCountSWPressed  = 0;
   static unsigned int debounceCountSWReleased = 0;
 
+#if (LOCAL_DEBUG > 1)
   static unsigned long SWPressedTime;
   static unsigned long SWReleasedTime;
+
+  unsigned long currentMillis = millis();
+#endif
 
   static bool started = false;
 
@@ -105,10 +109,10 @@ void IRAM_ATTR TimerHandler1()
       // Call and flag SWPressed
       if (!SWPressed)
       {
-        SWPressedTime = millis();
-
-#if (LOCAL_DEBUG > 0)
-        Serial.println("SW Press, from millis() = " + String(SWPressedTime - DEBOUNCING_INTERVAL_MS));
+#if (LOCAL_DEBUG > 1)   
+        SWPressedTime = currentMillis;
+        
+        Serial.print("SW Press, from millis() = "); Serial.println(SWPressedTime);
 #endif
 
         SWPressed = true;
@@ -122,9 +126,10 @@ void IRAM_ATTR TimerHandler1()
         // Call and flag SWLongPressed
         if (!SWLongPressed)
         {
-#if (LOCAL_DEBUG > 0)
-          Serial.println("SW Long Pressed, total time ms = " + String(millis()) + " - " + String(SWPressedTime - DEBOUNCING_INTERVAL_MS)
-                         + " = " + String(millis() - SWPressedTime + DEBOUNCING_INTERVAL_MS) );
+#if (LOCAL_DEBUG > 1)
+          Serial.print("SW Long Pressed, total time ms = "); Serial.print(currentMillis);
+          Serial.print(" - "); Serial.print(SWPressedTime);
+          Serial.print(" = "); Serial.println(currentMillis - SWPressedTime);                                           
 #endif
 
           SWLongPressed = true;
@@ -140,11 +145,11 @@ void IRAM_ATTR TimerHandler1()
     // Start debouncing counting debounceCountSWReleased and clear debounceCountSWPressed
     if ( SWPressed && (++debounceCountSWReleased >= DEBOUNCING_INTERVAL_MS / TIMER1_INTERVAL_MS))
     {
-      SWReleasedTime = millis();
+#if (LOCAL_DEBUG > 1)      
+      SWReleasedTime = currentMillis;
 
       // Call and flag SWPressed
-#if (LOCAL_DEBUG > 0)
-      Serial.println("SW Released, from millis() = " + String(SWReleasedTime));
+      Serial.print("SW Released, from millis() = "); Serial.println(SWReleasedTime);
 #endif
 
       SWPressed     = false;
@@ -155,8 +160,9 @@ void IRAM_ATTR TimerHandler1()
       //Your_Response_To_Release();
 
       // Call and flag SWPressed
-#if (LOCAL_DEBUG > 0)
-      Serial.println("SW Pressed total time ms = " + String(SWReleasedTime - SWPressedTime));
+#if (LOCAL_DEBUG > 1)
+      Serial.print("SW Pressed total time ms = ");
+      Serial.println(SWReleasedTime - SWPressedTime);
 #endif
 
       debounceCountSWPressed = 0;
@@ -171,19 +177,21 @@ void setup()
 
   delay(100);
   
-  Serial.println("\nStarting SwitchDebounce on " + String(ARDUINO_BOARD));
+  Serial.print(F("\nStarting SwitchDebounce on ")); Serial.println(ARDUINO_BOARD);
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
-  Serial.printf("CPU Frequency = %ld MHz\n", F_CPU / 1000000);
-  
+  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
+
   // Using ESP32  => 80 / 160 / 240MHz CPU clock ,
   // For 64-bit timer counter
   // For 16-bit timer prescaler up to 1024
 
   // Interval in microsecs
   if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS * 1000, TimerHandler1))
-    Serial.println("Starting  ITimer1 OK, millis() = " + String(millis()));
+  {
+    Serial.print(F("Starting  ITimer1 OK, millis() = ")); Serial.println(millis());
+  }
   else
-    Serial.println("Can't set ITimer1. Select another freq., duration or timer");
+    Serial.println(F("Can't set ITimer1. Select another freq. or timer"));
 }
 
 void loop()
