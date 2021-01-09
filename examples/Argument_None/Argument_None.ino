@@ -67,7 +67,7 @@
 
 #define PIN_D23             23        // Pin D23 mapped to pin GPIO23/VSPI_MOSI of ESP32
 
-void IRAM_ATTR TimerHandler0(void)
+void IRAM_ATTR TimerHandler0()
 {
   static bool toggle0 = false;
   static bool started = false;
@@ -87,7 +87,7 @@ void IRAM_ATTR TimerHandler0(void)
   toggle0 = !toggle0;
 }
 
-void IRAM_ATTR TimerHandler1(void)
+void IRAM_ATTR TimerHandler1()
 {
   static bool toggle1 = false;
   static bool started = false;

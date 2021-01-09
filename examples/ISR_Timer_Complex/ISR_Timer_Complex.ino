@@ -133,7 +133,7 @@ BlynkTimer blynkTimer;
 
 #define LED_TOGGLE_INTERVAL_MS        5000L
 
-void IRAM_ATTR TimerHandler(void)
+void IRAM_ATTR TimerHandler()
 {
   static bool toggle  = false;
   static bool started = false;
