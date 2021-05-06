@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-  ESP32_ISR_Timer.cpp
+  ESP32_ISR_Timer-Impl.h
   For ESP32 boards
   Written by Khoi Hoang
 
@@ -24,8 +24,8 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 1.2.0
-
+  Version: 1.3.0
+  
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.0   K Hoang      23/11/2019 Initial coding
@@ -35,6 +35,7 @@
   1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
+  1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
 *****************************************************************************************************************************/
 
 #include "ESP32_ISR_Timer.h"
@@ -386,4 +387,5 @@ unsigned ESP32_ISR_Timer::getNumTimers()
 {
   return numTimers;
 }
+
 

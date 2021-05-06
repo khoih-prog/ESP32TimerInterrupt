@@ -24,8 +24,8 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
   
-  Version: 1.2.0
-  
+  Version: 1.3.0
+
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.0   K Hoang      23/11/2019 Initial coding
@@ -35,6 +35,7 @@
   1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
+  1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
 *****************************************************************************************************************************/
 /*
    Notes:
@@ -59,19 +60,23 @@
 
 #ifndef ESP32
   #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
+        ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
+        ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
+  #define USING_ESP32_S2_TIMER_INTERRUPT            true
 #endif
 
 // These define's must be placed at the beginning before #include "TimerInterrupt_Generic.h"
 // _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
 // Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
 #define TIMER_INTERRUPT_DEBUG         1
-#define _TIMERINTERRUPT_LOGLEVEL_     0
+#define _TIMERINTERRUPT_LOGLEVEL_     4
 
 #include "ESP32TimerInterrupt.h"
 
-#define PIN_D23                   23        // Pin D23 mapped to pin GPIO23/VSPI_MOSI of ESP32
+#define PIN_D1              1         // Pin D1 mapped to pin GPIO1 of ESP32-S2
 
-unsigned int SWPin = PIN_D23;
+unsigned int SWPin = PIN_D1;
 
 #define TIMER0_INTERVAL_MS        1
 #define DEBOUNCING_INTERVAL_MS    80
@@ -87,8 +92,19 @@ float avgRPM    = 0.00;
 
 volatile int debounceCounter;
 
-void IRAM_ATTR TimerHandler0()
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  void IRAM_ATTR TimerHandler0(void * timerNo)
+#else
+  void IRAM_ATTR TimerHandler0(void)
+#endif
 {
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  /////////////////////////////////////////////////////////
+  // Always call this for ESP32-S2 before processing ISR
+  TIMER_ISR_START(timerNo);
+  /////////////////////////////////////////////////////////
+#endif
+
   static bool started = false;
 
   if (!started)
@@ -132,6 +148,13 @@ void IRAM_ATTR TimerHandler0()
   {
     rotationTime++;
   }
+
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  /////////////////////////////////////////////////////////
+  // Always call this for ESP32-S2 after processing ISR
+  TIMER_ISR_END(timerNo);
+  /////////////////////////////////////////////////////////
+#endif
 }
 
 void setup()
@@ -142,7 +165,13 @@ void setup()
   delay(100);
   
   Serial.print(F("\nStarting RPM_Measure on ")); Serial.println(ARDUINO_BOARD);
+
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  Serial.println(ESP32_S2_TIMER_INTERRUPT_VERSION);
+#else
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+#endif
+
   Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
 
   // Using ESP32  => 80 / 160 / 240MHz CPU clock ,

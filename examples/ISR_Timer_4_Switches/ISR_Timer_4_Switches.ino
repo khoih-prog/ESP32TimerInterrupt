@@ -24,8 +24,8 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
   
-  Version: 1.2.0
-  
+  Version: 1.3.0
+
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.0   K Hoang      23/11/2019 Initial coding
@@ -35,6 +35,7 @@
   1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
+  1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
 *****************************************************************************************************************************/
 /* Notes:
    Special design is necessary to share data between interrupt code and the rest of your program.
@@ -69,6 +70,10 @@
 */
 #ifndef ESP32
   #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
+        ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
+        ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
+  #define USING_ESP32_S2_TIMER_INTERRUPT            true
 #endif
 
 #define BLYNK_PRINT Serial
@@ -131,17 +136,17 @@ ESP32Timer ITimer1(1);
 #define VPIN2             V3
 #define VPIN3             V4
 
-#define TAC_SW0_PIN       32            // Pin D32 mapped to pin GPIO32/ADC4/TOUCH9 of ESP32
-#define RELAY_0_PIN       33            // Pin D33 mapped to pin GPIO33/ADC5/TOUCH8 of ESP32
+#define TAC_SW0_PIN       1            // Pin D1 mapped to pin GPIO1 of ESP32/ESP32-S2
+#define RELAY_0_PIN       2            // Pin D2 mapped to pin GPIO2 of ESP32/ESP32-S2
 
-#define TAC_SW1_PIN       16            // Pin D16 mapped to pin GPIO16/TX2 of ESP32
-#define RELAY_1_PIN       17            // Pin D17 mapped to pin GPIO17/RX2 of ESP32  
+#define TAC_SW1_PIN       3            // Pin D3 mapped to pin GPIO3 of ESP32/ESP32-S2
+#define RELAY_1_PIN       4            // Pin D4 mapped to pin GPIO4 of ESP32/ESP32-S2 
 
-#define TAC_SW2_PIN       24            // Pin D24 mapped to pin GPIO24 of ESP32
-#define RELAY_2_PIN       25            // Pin D25 mapped to pin GPIO25/ADC18/DAC1 of ESP32
+#define TAC_SW2_PIN       5            // Pin D5 mapped to pin GPIO5 of ESP32/ESP32-S2
+#define RELAY_2_PIN       6            // Pin D6 mapped to pin GPIO6 of ESP32/ESP32-S2
 
-#define TAC_SW3_PIN       26            // Pin D26 mapped to pin GPIO26/ADC19/DAC2 of ESP32
-#define RELAY_3_PIN       27            // Pin D27 mapped to pin GPIO27/ADC17/TOUCH7 of ESP32  
+#define TAC_SW3_PIN       7            // Pin D7 mapped to pin GPIO7 of ESP32/ESP32-S2
+#define RELAY_3_PIN       8            // Pin D8 mapped to pin GPIO8 of ESP32/ESP32-S2
 
 #define LAMPSTATE_PIN0    V5
 #define LAMPSTATE_PIN1    V6
@@ -400,8 +405,19 @@ void checkButton()
 }
 
 // Need only one for 4 SWs
-void IRAM_ATTR HWCheckButton()
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  void IRAM_ATTR HWCheckButton(void * timerNo)
+#else
+  void IRAM_ATTR HWCheckButton(void)
+#endif
 {
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  /////////////////////////////////////////////////////////
+  // Always call this for ESP32-S2 before processing ISR
+  TIMER_ISR_START(timerNo);
+  /////////////////////////////////////////////////////////
+#endif
+
   static uint16_t index;
 
   for (index = 0; index < NUMBER_OF_LAMPS; index++)
@@ -412,6 +428,13 @@ void IRAM_ATTR HWCheckButton()
     }
     ButtonCheck();
   }
+
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  /////////////////////////////////////////////////////////
+  // Always call this for ESP32-S2 after processing ISR
+  TIMER_ISR_END(timerNo);
+  /////////////////////////////////////////////////////////
+#endif
 }
 
 void IRAM_ATTR ButtonCheck()
@@ -474,7 +497,13 @@ void setup()
   while (!Serial);
   
   Serial.print(F("\nStarting ISR_Timer_4_Switches on ")); Serial.println(ARDUINO_BOARD);
+
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  Serial.println(ESP32_S2_TIMER_INTERRUPT_VERSION);
+#else
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+#endif
+
   Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
 
   for (uint16_t index = 0; index < NUMBER_OF_LAMPS; index++)

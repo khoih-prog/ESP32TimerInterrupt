@@ -24,8 +24,8 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
   
-  Version: 1.2.0
-  
+  Version: 1.3.0
+
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.0   K Hoang      23/11/2019 Initial coding
@@ -35,6 +35,7 @@
   1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
+  1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
 *****************************************************************************************************************************/
 /*
    Notes:
@@ -67,6 +68,10 @@
 
 #ifndef ESP32
   #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
+        ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
+        ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
+  #define USING_ESP32_S2_TIMER_INTERRUPT            true
 #endif
 
 #define BLYNK_PRINT Serial
@@ -133,10 +138,20 @@ BlynkTimer blynkTimer;
 
 #define LED_TOGGLE_INTERVAL_MS        5000L
 
-void IRAM_ATTR TimerHandler()
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  void IRAM_ATTR TimerHandler(void * timerNo)
+#else
+  void IRAM_ATTR TimerHandler(void)
+#endif
 {
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  /////////////////////////////////////////////////////////
+  // Always call this for ESP32-S2 before processing ISR
+  TIMER_ISR_START(timerNo);
+  /////////////////////////////////////////////////////////
+#endif
+
   static bool toggle  = false;
-  static bool started = false;
   static int timeRun  = 0;
 
   ISR_Timer.run();
@@ -146,16 +161,17 @@ void IRAM_ATTR TimerHandler()
   {
     timeRun = 0;
 
-    if (!started)
-    {
-      started = true;
-      pinMode(LED_BUILTIN, OUTPUT);
-    }
-
     //timer interrupt toggles pin LED_BUILTIN
     digitalWrite(LED_BUILTIN, toggle);
     toggle = !toggle;
   }
+
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  /////////////////////////////////////////////////////////
+  // Always call this for ESP32-S2 after processing ISR
+  TIMER_ISR_END(timerNo);
+  /////////////////////////////////////////////////////////
+#endif
 }
 
 // In ESP32, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
@@ -244,6 +260,8 @@ void blynkDoingSomething2s()
 
 void setup()
 {
+  pinMode(LED_BUILTIN, OUTPUT);
+  
   // Just a temporary hack
   // ESP32 WiFi is still buggy. By moving it up here, we can avoid interfering / interacting problem with other ISRs
   WiFi.begin(ssid, pass);
@@ -254,7 +272,13 @@ void setup()
   while (!Serial);
 
   Serial.print(F("\nStarting ISR_Timer_Complex on ")); Serial.println(ARDUINO_BOARD);
+
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  Serial.println(ESP32_S2_TIMER_INTERRUPT_VERSION);
+#else
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+#endif
+
   Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
   
   // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.

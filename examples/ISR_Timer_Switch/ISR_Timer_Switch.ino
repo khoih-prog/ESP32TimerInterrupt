@@ -24,8 +24,8 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
   
-  Version: 1.2.0
-  
+  Version: 1.3.0
+
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.0   K Hoang      23/11/2019 Initial coding
@@ -35,6 +35,7 @@
   1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
+  1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
 *****************************************************************************************************************************/
 /* Notes:
    Special design is necessary to share data between interrupt code and the rest of your program.
@@ -70,6 +71,10 @@
 
 #ifndef ESP32
   #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
+        ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
+        ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
+  #define USING_ESP32_S2_TIMER_INTERRUPT            true
 #endif
 
 #define BLYNK_PRINT Serial
@@ -134,8 +139,8 @@ volatile bool           alreadyTriggered  = false;
 volatile bool LampState    = false;
 volatile bool SwitchReset  = true;
 
-#define RELAY_PIN     32            // Pin D32 mapped to pin GPIO32/ADC4/TOUCH9 of ESP32
-#define BUTTON_PIN    33            // Pin D33 mapped to pin GPIO33/ADC5/TOUCH8 of ESP32
+#define RELAY_PIN     2         // Pin D2 mapped to pin GPIO2/LED_BUILTIN of ESP32/ESP32-S2
+#define BUTTON_PIN    1         // Pin D1 mapped to pin GPIO1 of ESP32/ESP32-S2
 
 unsigned int myWiFiTimeout        =  3200L;  //  3.2s WiFi connection timeout   (WCT)
 unsigned int buttonInterval       =  511L;   //  0.5s update button state
@@ -191,8 +196,19 @@ void IRAM_ATTR Falling()
   }
 }
 
-void IRAM_ATTR HWCheckButton()
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  void IRAM_ATTR HWCheckButton(void * timerNo)
+#else
+  void IRAM_ATTR HWCheckButton(void)
+#endif
 {
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  /////////////////////////////////////////////////////////
+  // Always call this for ESP32-S2 before processing ISR
+  TIMER_ISR_START(timerNo);
+  /////////////////////////////////////////////////////////
+#endif
+
   if (!alreadyTriggered && buttonPressed)
   {
     alreadyTriggered = true;
@@ -205,6 +221,13 @@ void IRAM_ATTR HWCheckButton()
     alreadyTriggered = false;
     ButtonCheck();
   }
+
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  /////////////////////////////////////////////////////////
+  // Always call this for ESP32-S2 after processing ISR
+  TIMER_ISR_END(timerNo);
+  /////////////////////////////////////////////////////////
+#endif
 }
 
 void heartBeatPrint()
@@ -287,7 +310,13 @@ void setup()
   while (!Serial);
   
   Serial.print(F("\nStarting ISR_Timer_Switch on ")); Serial.println(ARDUINO_BOARD);
+
+#if USING_ESP32_S2_TIMER_INTERRUPT
+  Serial.println(ESP32_S2_TIMER_INTERRUPT_VERSION);
+#else
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+#endif
+
   Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
 
   // Interval in microsecs

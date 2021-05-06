@@ -24,8 +24,8 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 1.2.0
-
+  Version: 1.3.0
+  
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.0   K Hoang      23/11/2019 Initial coding
@@ -35,6 +35,7 @@
   1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
+  1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
 *****************************************************************************************************************************/
 
 #pragma once
@@ -46,8 +47,20 @@
   #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
 #endif
 
-#ifndef ESP32_TIMER_INTERRUPT_VERSION
-  #define ESP32_TIMER_INTERRUPT_VERSION       "ESP32TimerInterrupt v1.2.0"
+#ifndef ESP32
+  #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
+        ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
+        ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
+  #warning Using ESP32_S2_TimerInterrupt Library and very different examples. Please check.
+  #ifndef ESP32_S2_TIMER_INTERRUPT_VERSION
+    #define ESP32_S2_TIMER_INTERRUPT_VERSION    "ESP32_S2_TimerInterrupt v1.3.0"
+  #endif
+#else
+  #warning Using ESP32TimerInterrupt Library
+  #ifndef ESP32_TIMER_INTERRUPT_VERSION
+    #define ESP32_TIMER_INTERRUPT_VERSION       "ESP32TimerInterrupt v1.3.0"
+  #endif
 #endif
 
 #include "TimerInterrupt_Generic_Debug.h"
@@ -201,4 +214,5 @@ class ESP32_ISR_Timer
 
 
 #endif    // ISR_TIMER_GENERIC_H
+
 

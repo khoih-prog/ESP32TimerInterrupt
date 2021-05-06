@@ -10,6 +10,9 @@ ESP32_ISRTimer KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 
+TIMER_ISR_START KEYWORD2
+TIMER_ISR_END KEYWORD2
+
 setFrequency	KEYWORD2
 setInterval	KEYWORD2
 attachInterrupt	KEYWORD2

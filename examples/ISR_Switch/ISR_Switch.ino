@@ -24,8 +24,8 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
   
-  Version: 1.2.0
-  
+  Version: 1.3.0
+
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.0   K Hoang      23/11/2019 Initial coding
@@ -35,6 +35,7 @@
   1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
+  1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
 *****************************************************************************************************************************/
 /* Notes:
    Special design is necessary to share data between interrupt code and the rest of your program.
@@ -59,6 +60,10 @@
 
 #ifndef ESP32
   #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
+        ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
+        ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
+  #define USING_ESP32_S2_TIMER_INTERRUPT            true
 #endif
 
 #define BLYNK_PRINT Serial
@@ -117,8 +122,8 @@ volatile bool LampState    = false;
 volatile bool SwitchReset  = true;
 
  
-#define RELAY_PIN     32            // Pin D32 mapped to pin GPIO32/ADC4/TOUCH9 of ESP32
-#define BUTTON_PIN    33            // Pin D33 mapped to pin GPIO33/ADC5/TOUCH8 of ESP32
+#define RELAY_PIN     2         // Pin D2 mapped to pin GPIO2/LED_BUILTIN of ESP32/ESP32-S2
+#define BUTTON_PIN    1         // Pin D1 mapped to pin GPIO1 of ESP32/ESP32-S2
 
 BlynkTimer Timer;
 
