@@ -44,7 +44,7 @@
     * [4.2 Update esptool](#42-update-esptool)
   * [5. Download tools for ESP32-C3](#5-download-tools-for-esp32-c3)
   * [6. esp32-s2 WebServer Library Patch](#6-esp32-s2-webserver-library-patch)
-* [Note for Platform IO using ESP32 LittleFS](#note-for-platform-io-using-esp32-littlefs)  
+* [Note for Platform IO using ESP32 LittleFS](#note-for-platform-io-using-esp32-littlefs)
 * [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix-multiple-definitions-linker-error)
 * [HOWTO Use analogRead() with ESP32 running WiFi and/or BlueTooth (BT/BLE)](#howto-use-analogread-with-esp32-running-wifi-andor-bluetooth-btble)
   * [1. ESP32 has 2 ADCs, named ADC1 and ADC2](#1--esp32-has-2-adcs-named-adc1-and-adc2)
@@ -146,7 +146,8 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ### Releases v1.3.0
 
 1. Add support to ESP32-S2 and ESP32-C3
-2. Update examples
+2. Add support to new ESP32 core v1.0.6
+3. Update examples
 
 ### Releases v1.2.0
 
@@ -1005,7 +1006,7 @@ Time = 180018, Timer0Count = 279, , Timer1Count = 139
 
 ---
 
-### 4. TimerInterruptTest on ESP32S2_DEV
+### 4. TimerInterruptTest on ESP32_S2_DEV
 
 The following is the sample terminal output when running example [TimerInterruptTest](examples/TimerInterruptTest) on **ESP32S2_DEV** to demonstrate how to start/stop Hardware Timers.
 
@@ -1080,7 +1081,8 @@ Sometimes, the library will only work if you update the board core to the latest
 ### Releases v1.3.0
 
 1. Add support to ESP32-S2 and ESP32-C3
-2. Update examples
+2. Add support to new ESP32 core v1.0.6
+3. Update examples
 
 ### Releases v1.2.0
 
@@ -1134,6 +1136,8 @@ Submit issues to: [ESP32TimerInterrupt issues](https://github.com/khoih-prog/ESP
 2. More hardware-initiated software-enabled timers
 3. Longer time interval
 4. Similar features for remaining Arduino boards such as SAMD21, SAMD51, SAM-DUE, nRF52, ESP8266, STM32, etc.
+5. Add support to new ESP32-S2
+6. Add support to new ESP32 core v1.0.6
 
 ---
 ---
