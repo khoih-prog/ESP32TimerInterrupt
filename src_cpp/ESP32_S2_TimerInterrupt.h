@@ -25,7 +25,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 1.3.0
+  Version: 1.4.0
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -37,6 +37,7 @@
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
   1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
+  1.4.0   K.Hoang      01/06/2021 Add complex examples. Fix compiler errors due to conflict to some libraries.
 *****************************************************************************************************************************/
 
 #pragma once
@@ -53,7 +54,7 @@
 #endif
 
 #ifndef ESP32_S2_TIMER_INTERRUPT_VERSION
-  #define ESP32_S2_TIMER_INTERRUPT_VERSION       "ESP32_S2_TimerInterrupt v1.3.0"
+  #define ESP32_S2_TIMER_INTERRUPT_VERSION       "ESP32_S2_TimerInterrupt v1.4.0"
 #endif
 
 #ifndef TIMER_INTERRUPT_DEBUG

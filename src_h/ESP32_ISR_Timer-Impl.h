@@ -24,7 +24,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 1.3.0
+  Version: 1.4.0
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -36,6 +36,7 @@
   1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
   1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
+  1.4.0   K.Hoang      01/06/2021 Add complex examples. Fix compiler errors due to conflict to some libraries.
 *****************************************************************************************************************************/
 
 #pragma once
@@ -59,7 +60,7 @@ void ESP32_ISR_Timer::init()
 {
   unsigned long current_millis = millis();   //elapsed();
 
-  for (uint8_t i = 0; i < MAX_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++) 
   {
     memset((void*) &timer[i], 0, sizeof (timer_t));
     timer[i].prev_millis = current_millis;
@@ -82,10 +83,10 @@ void IRAM_ATTR ESP32_ISR_Timer::run()
   // ESP32 is a multi core / multi processing chip. It is mandatory to disable task switches during ISR
   portENTER_CRITICAL_ISR(&timerMux);
 
-  for (i = 0; i < MAX_TIMERS; i++) 
+  for (i = 0; i < MAX_NUMBER_TIMERS; i++) 
   {
 
-    timer[i].toBeCalled = DEFCALL_DONTRUN;
+    timer[i].toBeCalled = TIMER_DEFCALL_DONTRUN;
 
     // no callback == no timer, i.e. jump over empty slots
     if (timer[i].callback != NULL) 
@@ -106,20 +107,20 @@ void IRAM_ATTR ESP32_ISR_Timer::run()
         {
 
           // "run forever" timers must always be executed
-          if (timer[i].maxNumRuns == RUN_FOREVER) 
+          if (timer[i].maxNumRuns == TIMER_RUN_FOREVER) 
           {
-            timer[i].toBeCalled = DEFCALL_RUNONLY;
+            timer[i].toBeCalled = TIMER_DEFCALL_RUNONLY;
           }
           // other timers get executed the specified number of times
           else if (timer[i].numRuns < timer[i].maxNumRuns) 
           {
-            timer[i].toBeCalled = DEFCALL_RUNONLY;
+            timer[i].toBeCalled = TIMER_DEFCALL_RUNONLY;
             timer[i].numRuns++;
 
             // after the last run, delete the timer
             if (timer[i].numRuns >= timer[i].maxNumRuns) 
             {
-              timer[i].toBeCalled = DEFCALL_RUNANDDEL;
+              timer[i].toBeCalled = TIMER_DEFCALL_RUNANDDEL;
             }
           }
         }
@@ -127,9 +128,9 @@ void IRAM_ATTR ESP32_ISR_Timer::run()
     }
   }
 
-  for (i = 0; i < MAX_TIMERS; i++) 
+  for (i = 0; i < MAX_NUMBER_TIMERS; i++) 
   {
-    if (timer[i].toBeCalled == DEFCALL_DONTRUN)
+    if (timer[i].toBeCalled == TIMER_DEFCALL_DONTRUN)
       continue;
 
     if (timer[i].hasParam)
@@ -137,7 +138,7 @@ void IRAM_ATTR ESP32_ISR_Timer::run()
     else
       (*(timer_callback)timer[i].callback)();
 
-    if (timer[i].toBeCalled == DEFCALL_RUNANDDEL)
+    if (timer[i].toBeCalled == TIMER_DEFCALL_RUNANDDEL)
       deleteTimer(i);
   }
 
@@ -152,13 +153,13 @@ void IRAM_ATTR ESP32_ISR_Timer::run()
 int ESP32_ISR_Timer::findFirstFreeSlot() 
 {
   // all slots are used
-  if (numTimers >= MAX_TIMERS) 
+  if (numTimers >= MAX_NUMBER_TIMERS) 
   {
     return -1;
   }
 
   // return the first slot with no callback (i.e. free)
-  for (uint8_t i = 0; i < MAX_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++) 
   {
     if (timer[i].callback == NULL) 
     {
@@ -217,27 +218,27 @@ int ESP32_ISR_Timer::setTimer(unsigned long d, timer_callback_p f, void* p, unsi
 
 int ESP32_ISR_Timer::setInterval(unsigned long d, timer_callback f) 
 {
-  return setupTimer(d, (void *)f, NULL, false, RUN_FOREVER);
+  return setupTimer(d, (void *)f, NULL, false, TIMER_RUN_FOREVER);
 }
 
 int ESP32_ISR_Timer::setInterval(unsigned long d, timer_callback_p f, void* p) 
 {
-  return setupTimer(d, (void *)f, p, true, RUN_FOREVER);
+  return setupTimer(d, (void *)f, p, true, TIMER_RUN_FOREVER);
 }
 
 int ESP32_ISR_Timer::setTimeout(unsigned long d, timer_callback f) 
 {
-  return setupTimer(d, (void *)f, NULL, false, RUN_ONCE);
+  return setupTimer(d, (void *)f, NULL, false, TIMER_RUN_ONCE);
 }
 
 int ESP32_ISR_Timer::setTimeout(unsigned long d, timer_callback_p f, void* p) 
 {
-  return setupTimer(d, (void *)f, p, true, RUN_ONCE);
+  return setupTimer(d, (void *)f, p, true, TIMER_RUN_ONCE);
 }
 
 bool IRAM_ATTR ESP32_ISR_Timer::changeInterval(unsigned numTimer, unsigned long d) 
 {
-  if (numTimer >= MAX_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS) 
   {
     return false;
   }
@@ -263,7 +264,7 @@ bool IRAM_ATTR ESP32_ISR_Timer::changeInterval(unsigned numTimer, unsigned long 
 
 void ESP32_ISR_Timer::deleteTimer(unsigned timerId) 
 {
-  if (timerId >= MAX_TIMERS) 
+  if (timerId >= MAX_NUMBER_TIMERS) 
   {
     return;
   }
@@ -295,7 +296,7 @@ void ESP32_ISR_Timer::deleteTimer(unsigned timerId)
 // function contributed by code@rowansimms.com
 void ESP32_ISR_Timer::restartTimer(unsigned numTimer) 
 {
-  if (numTimer >= MAX_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS) 
   {
     return;
   }
@@ -312,7 +313,7 @@ void ESP32_ISR_Timer::restartTimer(unsigned numTimer)
 
 bool ESP32_ISR_Timer::isEnabled(unsigned numTimer) 
 {
-  if (numTimer >= MAX_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS) 
   {
     return false;
   }
@@ -323,7 +324,7 @@ bool ESP32_ISR_Timer::isEnabled(unsigned numTimer)
 
 void ESP32_ISR_Timer::enable(unsigned numTimer) 
 {
-  if (numTimer >= MAX_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS) 
   {
     return;
   }
@@ -334,7 +335,7 @@ void ESP32_ISR_Timer::enable(unsigned numTimer)
 
 void ESP32_ISR_Timer::disable(unsigned numTimer) 
 {
-  if (numTimer >= MAX_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS) 
   {
     return;
   }
@@ -349,9 +350,9 @@ void ESP32_ISR_Timer::enableAll()
   // ESP32 is a multi core / multi processing chip. It is mandatory to disable task switches during modifying shared vars
   portENTER_CRITICAL(&timerMux);
 
-  for (uint8_t i = 0; i < MAX_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++) 
   {
-    if (timer[i].callback != NULL && timer[i].numRuns == RUN_FOREVER) 
+    if (timer[i].callback != NULL && timer[i].numRuns == TIMER_RUN_FOREVER) 
     {
       timer[i].enabled = true;
     }
@@ -368,9 +369,9 @@ void ESP32_ISR_Timer::disableAll()
   // ESP32 is a multi core / multi processing chip. It is mandatory to disable task switches during modifying shared vars
   portENTER_CRITICAL(&timerMux);
 
-  for (uint8_t i = 0; i < MAX_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++) 
   {
-    if (timer[i].callback != NULL && timer[i].numRuns == RUN_FOREVER) 
+    if (timer[i].callback != NULL && timer[i].numRuns == TIMER_RUN_FOREVER) 
     {
       timer[i].enabled = false;
     }
@@ -383,7 +384,7 @@ void ESP32_ISR_Timer::disableAll()
 
 void ESP32_ISR_Timer::toggle(unsigned numTimer) 
 {
-  if (numTimer >= MAX_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS) 
   {
     return;
   }
