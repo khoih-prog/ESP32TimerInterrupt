@@ -14,8 +14,8 @@ If you don't find anything, please [open a new issue](https://github.com/khoih-p
 
 Please ensure to specify the following:
 
-* Arduino IDE version (e.g. 1.8.15) or Platform.io version
-* `ESP32` Core Version (e.g. ESP32 core v1.0.6)
+* Arduino IDE version (e.g. 1.8.16) or Platform.io version
+* `ESP32` Core Version (e.g. ESP32 core v2.0.1)
 * `ESP32` Board type (e.g. ESP32_DEV Module, ESP32_S2_DEV, etc.)
 * Contextual information (e.g. what you were trying to achieve)
 * Simplest possible steps to reproduce
@@ -27,11 +27,11 @@ Please ensure to specify the following:
 ### Example
 
 ```
-Arduino IDE version: 1.8.15
-ESP32 Core Version 1.0.6
+Arduino IDE version: 1.8.16
+ESP32 Core Version 2.0.1
 ESP32S2_DEV Module
 OS: Ubuntu 20.04 LTS
-Linux xy-Inspiron-3593 5.4.0-73-generic #82-Ubuntu SMP Wed Apr 14 17:39:42 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+Linux xy-Inspiron-3593 5.4.0-90-generic #101-Ubuntu SMP Fri Oct 15 20:00:55 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
 
 Context:
 I encountered a crash while using ESP32TimerInterrupt.

@@ -24,7 +24,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 1.4.0
+  Version: 1.4.1
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -37,6 +37,7 @@
   1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
   1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
   1.4.0   K.Hoang      01/06/2021 Add complex examples. Fix compiler errors due to conflict to some libraries.
+  1.4.1   K.Hoang      14/11/2021 Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1
 *****************************************************************************************************************************/
 
 #pragma once
@@ -55,12 +56,12 @@
         ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
   #warning Using ESP32_S2_TimerInterrupt Library and very different examples. Please check.
   #ifndef ESP32_S2_TIMER_INTERRUPT_VERSION
-    #define ESP32_S2_TIMER_INTERRUPT_VERSION    "ESP32_S2_TimerInterrupt v1.4.0"
+    #define ESP32_S2_TIMER_INTERRUPT_VERSION    "ESP32_S2_TimerInterrupt v1.4.1"
   #endif
 #else
   #warning Using ESP32TimerInterrupt Library
   #ifndef ESP32_TIMER_INTERRUPT_VERSION
-    #define ESP32_TIMER_INTERRUPT_VERSION       "ESP32TimerInterrupt v1.4.0"
+    #define ESP32_TIMER_INTERRUPT_VERSION       "ESP32TimerInterrupt v1.4.1"
   #endif
 #endif
 

@@ -23,20 +23,6 @@
   
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
-  
-  Version: 1.4.0
-  
-  Version Modified By   Date      Comments
-  ------- -----------  ---------- -----------
-  1.0.0   K Hoang      23/11/2019 Initial coding
-  1.0.1   K Hoang      27/11/2019 No v1.0.1. Bump up to 1.0.2 to match ESP8266_ISR_TimerInterupt library
-  1.0.2   K.Hoang      03/12/2019 Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
-  1.0.3   K.Hoang      17/05/2020 Restructure code. Add examples. Enhance README.
-  1.1.0   K.Hoang      27/10/2020 Restore cpp code besides Impl.h code to use if Multiple-Definition linker error.
-  1.1.1   K.Hoang      06/12/2020 Add Version String and Change_Interval example to show how to change TimerInterval
-  1.2.0   K.Hoang      08/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
-  1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
-  1.4.0   K.Hoang      01/06/2021 Add complex examples. Fix compiler errors due to conflict to some libraries.
 *****************************************************************************************************************************/
 /*
    Notes:
@@ -58,10 +44,7 @@
   #define USING_ESP32_S2_TIMER_INTERRUPT            true
 #endif
 
-// These define's must be placed at the beginning before #include "TimerInterrupt_Generic.h"
-// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
-// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
-#define TIMER_INTERRUPT_DEBUG         1
+// These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
 #define _TIMERINTERRUPT_LOGLEVEL_     4
 
 #include "ESP32TimerInterrupt.h"
@@ -70,7 +53,10 @@
   #define LED_BUILTIN       2         // Pin D2 mapped to pin GPIO2/ADC12 of ESP32, control on-board LED
 #endif
 
-#define PIN_D1              1         // Pin D1 mapped to pin GPIO1 of ESP32/ESP32-S2
+// Don't use PIN_D1 in core v2.0.0 and v2.0.1. Check https://github.com/espressif/arduino-esp32/issues/5868
+#define PIN_D1              1         // Pin D1 mapped to pin GPIO1 of ESP32-S2
+#define PIN_D2              2         // Pin D2 mapped to pin GPIO2/ADC12/TOUCH2/LED_BUILTIN of ESP32
+#define PIN_D3              3         // Pin D3 mapped to pin GPIO3/RX0 of ESP32
 
 #if USING_ESP32_S2_TIMER_INTERRUPT
   void IRAM_ATTR TimerHandler0(void * timerNo)
@@ -86,10 +72,6 @@
 #endif
 
   static bool toggle0 = false;
-
-#if (TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print("ITimer0 called, millis() = "); Serial.println(millis());
-#endif
 
   //timer interrupt toggles pin LED_BUILTIN
   digitalWrite(LED_BUILTIN, toggle0);
@@ -118,12 +100,8 @@
 
   static bool toggle1 = false;
 
-#if (TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print("ITimer1 called, millis() = "); Serial.println(millis());
-#endif
-
   //timer interrupt toggles outputPin
-  digitalWrite(PIN_D1, toggle1);
+  digitalWrite(PIN_D3, toggle1);
   toggle1 = !toggle1;
 
 #if USING_ESP32_S2_TIMER_INTERRUPT
@@ -147,7 +125,7 @@ ESP32Timer ITimer1(1);
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(PIN_D1,      OUTPUT);
+  pinMode(PIN_D3,      OUTPUT);
 
   Serial.begin(115200);
   while (!Serial);
