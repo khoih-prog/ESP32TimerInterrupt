@@ -32,7 +32,7 @@
 * [How to use](#how-to-use)
 * [Examples](#examples)
   * [  1. Argument_None](examples/Argument_None)
-  * [  2. **Change_Interval**](examples/Change_Interval). New.
+  * [  2. **Change_Interval**](examples/Change_Interval).
   * [  3. ISR_RPM_Measure](examples/ISR_RPM_Measure)
   * [  4. ISR_Switch](examples/ISR_Switch)
   * [  5. ISR_Timer_Complex](examples/ISR_Timer_Complex)
@@ -42,8 +42,8 @@
   * [  9. RPM_Measure](examples/RPM_Measure)
   * [ 10. SwitchDebounce](examples/SwitchDebounce)
   * [ 11. TimerInterruptTest](examples/TimerInterruptTest)
-  * [ 12. ISR_16_Timers_Array](examples/ISR_16_Timers_Array) **New**
-  * [ 13. ISR_16_Timers_Array_Complex](examples/ISR_16_Timers_Array_Complex) **New**
+  * [ 12. ISR_16_Timers_Array](examples/ISR_16_Timers_Array)
+  * [ 13. ISR_16_Timers_Array_Complex](examples/ISR_16_Timers_Array_Complex)
 * [Example ISR_Timer_Complex](#example-isr_timer_complex)
 * [Debug Terminal Output Samples](#debug-terminal-output-samples)
   * [1. ISR_Timer_Complex on ESP32_DEV](#1-isr_timer_complex-on-esp32_dev)
@@ -1058,6 +1058,7 @@ Submit issues to: [ESP32TimerInterrupt issues](https://github.com/khoih-prog/ESP
 6. Add support to new ESP32 core v1.0.6
 7. Fix compiler errors due to conflict to some libraries.
 8. Add complex examples.
+9. Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1.
 
 ---
 ---
