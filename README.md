@@ -127,8 +127,8 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 
 ## Prerequisites
 
-1. [`Arduino IDE 1.8.16+` for Arduino](https://www.arduino.cc/en/Main/Software)
-2. [`ESP32 Core 2.0.1+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards (ESP32 and ESP32_S2). [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/).
+1. [`Arduino IDE 1.8.19+` for Arduino](https://github.com/arduino/Arduino). [![GitHub release](https://img.shields.io/github/release/arduino/Arduino.svg)](https://github.com/arduino/Arduino/releases/latest)
+2. [`ESP32 Core 2.0.2+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards (ESP32 and ESP32_S2). [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/).
 
 ---
 ---
@@ -188,24 +188,20 @@ Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error e
 
 ### HOWTO Fix `Multiple Definitions` Linker Error
 
-The current library implementation, using **xyz-Impl.h instead of standard xyz.cpp**, possibly creates certain `Multiple Definitions` Linker error in certain use cases. Although it's simple to just modify several lines of code, either in the library or in the application, the library is adding 2 more source directories
+The current library implementation, using `xyz-Impl.h` instead of standard `xyz.cpp`, possibly creates certain `Multiple Definitions` Linker error in certain use cases.
 
-1. **scr_h** for new h-only files
-2. **src_cpp** for standard h/cpp files
+You can use
 
-besides the standard **src** directory.
+```
+#include <ESP32_ISR_Timer.hpp>               //https://github.com/khoih-prog/ESP32TimerInterrupt
+```
 
-To use the **old standard cpp** way, locate this library' directory, then just 
+in many files. But be sure to use the following `#include <ESP32_ISR_Timer.h>` **in just 1 `.h`, `.cpp` or `.ino` file**, which must **not be included in any other file**, to avoid `Multiple Definitions` Linker Error
 
-1. **Delete the all the files in src directory.**
-2. **Copy all the files in src_cpp directory into src.**
-3. Close then reopen the application code in Arduino IDE, etc. to recompile from scratch.
-
-To re-use the **new h-only** way, just 
-
-1. **Delete the all the files in src directory.**
-2. **Copy the files in src_h directory into src.**
-3. Close then reopen the application code in Arduino IDE, etc. to recompile from scratch.
+```
+// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
+#include <ESP32_ISR_Timer.h>                //https://github.com/khoih-prog/ESP32TimerInterrupt
+```
 
 ---
 ---
@@ -636,7 +632,7 @@ While software timer, **programmed for 2s, is activated after 3.435s !!!**
 
 ```
 Starting ISR_Timer_Complex on ESP32_DEV
-ESP32TimerInterrupt v1.4.1
+ESP32TimerInterrupt v1.5.0
 CPU Frequency = 240 MHz
 ESP32TimerInterrupt: _timerNo = 1, _fre = 1000000.00, _count = 0 - 50000
 Starting  ITimer OK, millis() = 2140
@@ -701,7 +697,7 @@ The following is the sample terminal output when running example [TimerInterrupt
 
 ```
 Starting TimerInterruptTest on ESP32_DEV
-ESP32TimerInterrupt v1.4.1
+ESP32TimerInterrupt v1.5.0
 CPU Frequency = 240 MHz
 ESP32TimerInterrupt: _timerNo = 0, _fre = 1000000.00, _count = 0 - 1000000
 Starting  ITimer0 OK, millis() = 136
@@ -763,7 +759,7 @@ The following is the sample terminal output when running example [Change_Interva
 
 ```
 Starting Change_Interval on ESP32_DEV
-ESP32TimerInterrupt v1.4.1
+ESP32TimerInterrupt v1.5.0
 CPU Frequency = 240 MHz
 Starting  ITimer0 OK, millis() = 136
 Starting  ITimer1 OK, millis() = 136
@@ -847,7 +843,7 @@ The following is the sample terminal output when running example [ISR_16_Timers_
 
 ```
 Starting ISR_16_Timers_Array_Complex on ESP32_DEV
-ESP32TimerInterrupt v1.4.1
+ESP32TimerInterrupt v1.5.0
 CPU Frequency = 240 MHz
 Starting ITimer OK, millis() = 128
 SimpleTimer : 2, ms : 10129, Dms : 10000
@@ -1050,15 +1046,16 @@ Submit issues to: [ESP32TimerInterrupt issues](https://github.com/khoih-prog/ESP
 
 ## DONE
 
-1. Basic hardware timers for ESP32.
-2. More hardware-initiated software-enabled timers
-3. Longer time interval
-4. Similar features for remaining Arduino boards such as SAMD21, SAMD51, SAM-DUE, nRF52, ESP8266, STM32, etc.
-5. Add support to new ESP32-S2
-6. Add support to new ESP32 core v1.0.6
-7. Fix compiler errors due to conflict to some libraries.
-8. Add complex examples.
-9. Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1.
+ 1. Basic hardware timers for ESP32.
+ 2. More hardware-initiated software-enabled timers
+ 3. Longer time interval
+ 4. Similar features for remaining Arduino boards such as SAMD21, SAMD51, SAM-DUE, nRF52, ESP8266, STM32, etc.
+ 5. Add support to new ESP32-S2
+ 6. Add support to new ESP32 core v1.0.6
+ 7. Fix compiler errors due to conflict to some libraries.
+ 8. Add complex examples.
+ 9. Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1.
+10. Fix `multiple-definitions` linker error. Drop `src_cpp` and `src_h` directories
 
 ---
 ---
