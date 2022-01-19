@@ -16,7 +16,7 @@ Please ensure to specify the following:
 
 * Arduino IDE version (e.g. 1.8.19) or Platform.io version
 * `ESP32` Core Version (e.g. ESP32 core v2.0.2)
-* `ESP32` Board type (e.g. ESP32_DEV Module, ESP32_S2_DEV, etc.)
+* `ESP32` Board type (e.g. ESP32_DEV, ESP32_S2_DEV, etc.)
 * Contextual information (e.g. what you were trying to achieve)
 * Simplest possible steps to reproduce
 * Anything that might be relevant in your opinion, such as:
