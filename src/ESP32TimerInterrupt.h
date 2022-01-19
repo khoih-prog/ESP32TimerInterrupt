@@ -39,7 +39,7 @@
   1.3.0   K.Hoang      06/05/2021 Add support to ESP32-S2
   1.4.0   K.Hoang      01/06/2021 Add complex examples. Fix compiler errors due to conflict to some libraries.
   1.4.1   K.Hoang      14/11/2021 Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1
-  1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error.
+  1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
 *****************************************************************************************************************************/
 
 #pragma once
