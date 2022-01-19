@@ -29,7 +29,7 @@
 
 ### Releases v1.5.0
 
-1. Fix `multiple-definitions` linker error. Drop `src_cpp` and `src_h` directories
+1. Fix `multiple-definitions` linker error. Drop `src_cpp` and `src_h` directories.
 
 ### Releases v1.4.1
 
