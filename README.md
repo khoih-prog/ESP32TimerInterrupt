@@ -64,7 +64,7 @@
 ---
 
 
-### Important Change from v2.0.0
+### Important Breaking Change from v2.0.0
 
 Please have a look at [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix-multiple-definitions-linker-error)
 
@@ -116,8 +116,8 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ### Currently supported Boards
 
 1. ESP32 boards, such as `ESP32_DEV`, etc.
-2. ESP32S2-based boards, such as `ESP32S2_DEV`, `ESP32_S2 Saola`, etc.
-3. ESP32C3-based boards, such as `ESP32C3_DEV`, etc. **New**
+2. ESP32_S2-based boards, such as `ESP32S2_DEV`, `ESP32_S2 Saola`, etc.
+3. ESP32_C3-based boards, such as `ESP32C3_DEV`, etc. **New**
 4. ESP32_S3 (ESP32S3_DEV, ESP32_S3_BOX, UM TINYS3, UM PROS3, UM FEATHERS3, etc.) **New**
 
 ---
@@ -204,7 +204,7 @@ You can use
 #include <ESP32TimerInterrupt.hpp>               //https://github.com/khoih-prog/ESP32TimerInterrupt
 ```
 
-in many files. But be sure to use the following `#include <ESP32_ISR_Timer.h>` **in just 1 `.h`, `.cpp` or `.ino` file**, which must **not be included in any other file**, to avoid `Multiple Definitions` Linker Error
+in many files. But be sure to use the following `#include <ESP32TimerInterrupt.h>` **in just 1 `.h`, `.cpp` or `.ino` file**, which must **not be included in any other file**, to avoid `Multiple Definitions` Linker Error
 
 ```
 // To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
