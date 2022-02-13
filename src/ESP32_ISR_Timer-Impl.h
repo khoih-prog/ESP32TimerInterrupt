@@ -1,18 +1,22 @@
 /****************************************************************************************************************************
   ESP32_ISR_Timer-Impl.h
-  For ESP32 boards
+  For ESP32, ESP32_S2, ESP32_S3, ESP32_C3 boards with ESP32 core v2.0.2+
   Written by Khoi Hoang
 
-  Built by Khoi Hoang https://github.com/khoih-prog/ESP8266TimerInterrupt
+  Built by Khoi Hoang https://github.com/khoih-prog/ESP32TimerInterrupt
   Licensed under MIT license
 
-  The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
-  counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
-  and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
-  of the counter can be read by the software program.
+  The ESP32, ESP32_S2, ESP32_S3, ESP32_C3 have two timer groups, TIMER_GROUP_0 and TIMER_GROUP_1
+  1) each group of ESP32, ESP32_S2, ESP32_S3 has two general purpose hardware timers, TIMER_0 and TIMER_1
+  2) each group of ESP32_C3 has ony one general purpose hardware timer, TIMER_0
+  
+  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers. 
+  The timer counters can be configured to count up or down and support automatic reload and software reload. 
+  They can also generate alarms when they reach a specific value, defined by the software. 
+  The value of the counter can be read by the software program.
 
   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
-  unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
+  unsigned long miliseconds), you just consume only one ESP32-S2 timer and avoid conflicting with other cores' tasks.
   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
   Therefore, their executions are not blocked by bad-behaving functions / tasks.
   This important feature is absolutely necessary for mission-critical tasks.
@@ -24,7 +28,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 1.5.0
+  Version: 2.0.0
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -39,6 +43,7 @@
   1.4.0   K.Hoang      01/06/2021 Add complex examples. Fix compiler errors due to conflict to some libraries.
   1.4.1   K.Hoang      14/11/2021 Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1
   1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
+  2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
 *****************************************************************************************************************************/
 
 #pragma once
@@ -46,11 +51,6 @@
 #ifndef ISR_TIMER_GENERIC_IMPL_H
 #define ISR_TIMER_GENERIC_IMPL_H
 
-#ifndef ESP32
-  #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
-#endif
-
-//#include "ESP32_ISR_Timer.h"
 #include <string.h>
 
 ESP32_ISR_Timer::ESP32_ISR_Timer()
@@ -174,7 +174,7 @@ int ESP32_ISR_Timer::findFirstFreeSlot()
 }
 
 
-int ESP32_ISR_Timer::setupTimer(unsigned long d, void* f, void* p, bool h, unsigned n) 
+int ESP32_ISR_Timer::setupTimer(const unsigned long& delay, void* callback, void* param, bool hasParam, const uint32_t& numRuns) 
 {
   int freeTimer;
 
@@ -184,23 +184,24 @@ int ESP32_ISR_Timer::setupTimer(unsigned long d, void* f, void* p, bool h, unsig
   }
 
   freeTimer = findFirstFreeSlot();
+  
   if (freeTimer < 0) 
   {
     return -1;
   }
 
-  if (f == NULL) 
+  if (callback == NULL) 
   {
     return -1;
   }
 
-  timer[freeTimer].delay = d;
-  timer[freeTimer].callback = f;
-  timer[freeTimer].param = p;
-  timer[freeTimer].hasParam = h;
-  timer[freeTimer].maxNumRuns = n;
-  timer[freeTimer].enabled = true;
-  timer[freeTimer].prev_millis = millis();
+  timer[freeTimer].delay        = delay;
+  timer[freeTimer].callback     = callback;
+  timer[freeTimer].param        = param;
+  timer[freeTimer].hasParam     = hasParam;
+  timer[freeTimer].maxNumRuns   = numRuns;
+  timer[freeTimer].enabled      = true;
+  timer[freeTimer].prev_millis  = millis();
 
   numTimers++;
 
@@ -208,37 +209,37 @@ int ESP32_ISR_Timer::setupTimer(unsigned long d, void* f, void* p, bool h, unsig
 }
 
 
-int ESP32_ISR_Timer::setTimer(unsigned long d, timer_callback f, unsigned n) 
+int ESP32_ISR_Timer::setTimer(const unsigned long& delay, timer_callback callback, const uint32_t& numRuns) 
 {
-  return setupTimer(d, (void *)f, NULL, false, n);
+  return setupTimer(delay, (void *)callback, NULL, false, numRuns);
 }
 
-int ESP32_ISR_Timer::setTimer(unsigned long d, timer_callback_p f, void* p, unsigned n) 
+int ESP32_ISR_Timer::setTimer(const unsigned long& delay, timer_callback_p callback, void* param, const uint32_t& numRuns) 
 {
-  return setupTimer(d, (void *)f, p, true, n);
+  return setupTimer(delay, (void *)callback, param, true, numRuns);
 }
 
-int ESP32_ISR_Timer::setInterval(unsigned long d, timer_callback f) 
+int ESP32_ISR_Timer::setInterval(const unsigned long& delay, timer_callback callback) 
 {
-  return setupTimer(d, (void *)f, NULL, false, TIMER_RUN_FOREVER);
+  return setupTimer(delay, (void *)callback, NULL, false, TIMER_RUN_FOREVER);
 }
 
-int ESP32_ISR_Timer::setInterval(unsigned long d, timer_callback_p f, void* p) 
+int ESP32_ISR_Timer::setInterval(const unsigned long& delay, timer_callback_p callback, void* param) 
 {
-  return setupTimer(d, (void *)f, p, true, TIMER_RUN_FOREVER);
+  return setupTimer(delay, (void *)callback, param, true, TIMER_RUN_FOREVER);
 }
 
-int ESP32_ISR_Timer::setTimeout(unsigned long d, timer_callback f) 
+int ESP32_ISR_Timer::setTimeout(const unsigned long& delay, timer_callback callback) 
 {
-  return setupTimer(d, (void *)f, NULL, false, TIMER_RUN_ONCE);
+  return setupTimer(delay, (void *)callback, NULL, false, TIMER_RUN_ONCE);
 }
 
-int ESP32_ISR_Timer::setTimeout(unsigned long d, timer_callback_p f, void* p) 
+int ESP32_ISR_Timer::setTimeout(const unsigned long& delay, timer_callback_p callback, void* param) 
 {
-  return setupTimer(d, (void *)f, p, true, TIMER_RUN_ONCE);
+  return setupTimer(delay, (void *)callback, param, true, TIMER_RUN_ONCE);
 }
 
-bool IRAM_ATTR ESP32_ISR_Timer::changeInterval(unsigned numTimer, unsigned long d) 
+bool IRAM_ATTR ESP32_ISR_Timer::changeInterval(const uint8_t& numTimer, const unsigned long& delay) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -251,7 +252,7 @@ bool IRAM_ATTR ESP32_ISR_Timer::changeInterval(unsigned numTimer, unsigned long 
     // ESP32 is a multi core / multi processing chip. It is mandatory to disable task switches during modifying shared vars
     portENTER_CRITICAL(&timerMux);
 
-    timer[numTimer].delay = d;
+    timer[numTimer].delay = delay;
     timer[numTimer].prev_millis = millis();
 
     // ESP32 is a multi core / multi processing chip. It is mandatory to disable task switches during modifying shared vars
@@ -264,15 +265,10 @@ bool IRAM_ATTR ESP32_ISR_Timer::changeInterval(unsigned numTimer, unsigned long 
   return false;
 }
 
-void ESP32_ISR_Timer::deleteTimer(unsigned timerId) 
+void ESP32_ISR_Timer::deleteTimer(const uint8_t& timerId) 
 {
-  if (timerId >= MAX_NUMBER_TIMERS) 
-  {
-    return;
-  }
-
   // nothing to delete if no timers are in use
-  if (numTimers == 0) 
+  if ( (timerId >= MAX_NUMBER_TIMERS) || (numTimers == 0) )
   {
     return;
   }
@@ -296,7 +292,7 @@ void ESP32_ISR_Timer::deleteTimer(unsigned timerId)
 }
 
 // function contributed by code@rowansimms.com
-void ESP32_ISR_Timer::restartTimer(unsigned numTimer) 
+void ESP32_ISR_Timer::restartTimer(const uint8_t& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -313,7 +309,7 @@ void ESP32_ISR_Timer::restartTimer(unsigned numTimer)
 }
 
 
-bool ESP32_ISR_Timer::isEnabled(unsigned numTimer) 
+bool ESP32_ISR_Timer::isEnabled(const uint8_t& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -324,7 +320,7 @@ bool ESP32_ISR_Timer::isEnabled(unsigned numTimer)
 }
 
 
-void ESP32_ISR_Timer::enable(unsigned numTimer) 
+void ESP32_ISR_Timer::enable(const uint8_t& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -335,7 +331,7 @@ void ESP32_ISR_Timer::enable(unsigned numTimer)
 }
 
 
-void ESP32_ISR_Timer::disable(unsigned numTimer) 
+void ESP32_ISR_Timer::disable(const uint8_t& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -384,7 +380,7 @@ void ESP32_ISR_Timer::disableAll()
 
 }
 
-void ESP32_ISR_Timer::toggle(unsigned numTimer) 
+void ESP32_ISR_Timer::toggle(const uint8_t& numTimer)
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -395,7 +391,7 @@ void ESP32_ISR_Timer::toggle(unsigned numTimer)
 }
 
 
-unsigned ESP32_ISR_Timer::getNumTimers() 
+int8_t ESP32_ISR_Timer::getNumTimers()
 {
   return numTimers;
 }

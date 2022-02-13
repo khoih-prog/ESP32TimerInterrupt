@@ -1,18 +1,22 @@
 /****************************************************************************************************************************
   ESP32_ISR_Timer.hpp
-  For ESP32 boards
+  For ESP32, ESP32_S2, ESP32_S3, ESP32_C3 boards with ESP32 core v2.0.2+
   Written by Khoi Hoang
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESP32TimerInterrupt
   Licensed under MIT license
 
-  The ESP32 has two timer groups, each one with two general purpose hardware timers. All the timers are based on 64 bits
-  counters and 16 bit prescalers. The timer counters can be configured to count up or down and support automatic reload
-  and software reload. They can also generate alarms when they reach a specific value, defined by the software. The value
-  of the counter can be read by the software program.
+  The ESP32, ESP32_S2, ESP32_S3, ESP32_C3 have two timer groups, TIMER_GROUP_0 and TIMER_GROUP_1
+  1) each group of ESP32, ESP32_S2, ESP32_S3 has two general purpose hardware timers, TIMER_0 and TIMER_1
+  2) each group of ESP32_C3 has ony one general purpose hardware timer, TIMER_0
+  
+  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers. 
+  The timer counters can be configured to count up or down and support automatic reload and software reload. 
+  They can also generate alarms when they reach a specific value, defined by the software. 
+  The value of the counter can be read by the software program.
 
   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
-  unsigned long miliseconds), you just consume only one ESP32 timer and avoid conflicting with other cores' tasks.
+  unsigned long miliseconds), you just consume only one ESP32-S2 timer and avoid conflicting with other cores' tasks.
   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
   Therefore, their executions are not blocked by bad-behaving functions / tasks.
   This important feature is absolutely necessary for mission-critical tasks.
@@ -24,7 +28,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 1.5.0
+  Version: 2.0.0
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -39,6 +43,7 @@
   1.4.0   K.Hoang      01/06/2021 Add complex examples. Fix compiler errors due to conflict to some libraries.
   1.4.1   K.Hoang      14/11/2021 Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1
   1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
+  2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
 *****************************************************************************************************************************/
 
 #pragma once
@@ -46,24 +51,18 @@
 #ifndef ISR_TIMER_GENERIC_HPP
 #define ISR_TIMER_GENERIC_HPP
 
-#ifndef ESP32
-  #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
+#if !defined( ESP32 )
+  #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#ifndef ESP32
-  #error This code is designed to run on ESP32 platform, not Arduino nor ESP8266! Please check your Tools->Board setting.
-#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
-        ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
-        ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
-  #warning Using ESP32_S2_TimerInterrupt Library and very different examples. Please check.
-  #ifndef ESP32_S2_TIMER_INTERRUPT_VERSION
-    #define ESP32_S2_TIMER_INTERRUPT_VERSION    "ESP32_S2_TimerInterrupt v1.5.0"
-  #endif
-#else
-  #warning Using ESP32TimerInterrupt Library
-  #ifndef ESP32_TIMER_INTERRUPT_VERSION
-    #define ESP32_TIMER_INTERRUPT_VERSION       "ESP32TimerInterrupt v1.5.0"
-  #endif
+#ifndef ESP32_TIMER_INTERRUPT_VERSION
+  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.0"
+  
+  #define ESP32_TIMER_INTERRUPT_VERSION_MAJOR     2
+  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     0
+  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     0
+
+  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000000
 #endif
 
 #include "TimerInterrupt_Generic_Debug.h"
@@ -101,9 +100,9 @@ class ESP32_ISR_Timer
 
   public:
     // maximum number of timers
-#define MAX_NUMBER_TIMERS         16
-#define TIMER_RUN_FOREVER         0
-#define TIMER_RUN_ONCE            1
+#define MAX_NUMBER_TIMERS        16
+#define TIMER_RUN_FOREVER       0
+#define TIMER_RUN_ONCE          1
 
     // constructor
     ESP32_ISR_Timer();
@@ -113,53 +112,53 @@ class ESP32_ISR_Timer
     // this function must be called inside loop()
     void IRAM_ATTR run();
 
-    // Timer will call function 'f' every 'd' milliseconds forever
+    // Timer will call function 'callback' every 'delay' milliseconds forever
     // returns the timer number (numTimer) on success or
-    // -1 on failure (f == NULL) or no free timers
-    int setInterval(unsigned long d, timer_callback f);
+    // -1 on failure (callback == NULL) or no free timers
+    int setInterval(const unsigned long& delay, timer_callback callback);
 
-    // Timer will call function 'f' with parameter 'p' every 'd' milliseconds forever
+    // Timer will call function 'callback' with parameter 'param' every 'delay' milliseconds forever
     // returns the timer number (numTimer) on success or
-    // -1 on failure (f == NULL) or no free timers
-    int setInterval(unsigned long d, timer_callback_p f, void* p);
+    // -1 on failure (callback == NULL) or no free timers
+    int setInterval(const unsigned long& delay, timer_callback_p callback, void* param);
 
-    // Timer will call function 'f' after 'd' milliseconds one time
+    // Timer will call function 'callback' after 'delay' milliseconds one time
     // returns the timer number (numTimer) on success or
-    // -1 on failure (f == NULL) or no free timers
-    int setTimeout(unsigned long d, timer_callback f);
+    // -1 on failure (callback == NULL) or no free timers
+    int setTimeout(const unsigned long& delay, timer_callback callback);
 
-    // Timer will call function 'f' with parameter 'p' after 'd' milliseconds one time
+    // Timer will call function 'callback' with parameter 'param' after 'delay' milliseconds one time
     // returns the timer number (numTimer) on success or
-    // -1 on failure (f == NULL) or no free timers
-    int setTimeout(unsigned long d, timer_callback_p f, void* p);
+    // -1 on failure (callback == NULL) or no free timers
+    int setTimeout(const unsigned long& delay, timer_callback_p callback, void* param);
 
-    // Timer will call function 'f' every 'd' milliseconds 'n' times
+    // Timer will call function 'callback' every 'delay' milliseconds 'numRuns' times
     // returns the timer number (numTimer) on success or
-    // -1 on failure (f == NULL) or no free timers
-    int setTimer(unsigned long d, timer_callback f, unsigned n);
+    // -1 on failure (callback == NULL) or no free timers
+    int setTimer(const unsigned long& delay, timer_callback callback, const uint32_t& numRuns);
 
-    // Timer will call function 'f' with parameter 'p' every 'd' milliseconds 'n' times
+    // Timer will call function 'callback' with parameter 'param' every 'delay' milliseconds 'numRuns' times
     // returns the timer number (numTimer) on success or
-    // -1 on failure (f == NULL) or no free timers
-    int setTimer(unsigned long d, timer_callback_p f, void* p, unsigned n);
+    // -1 on failure (callback == NULL) or no free timers
+    int setTimer(const unsigned long& delay, timer_callback_p callback, void* param, const uint32_t& numRuns);
 
     // updates interval of the specified timer
-    bool changeInterval(unsigned numTimer, unsigned long d);
+    bool changeInterval(const uint8_t& numTimer, const unsigned long& delay);
 
     // destroy the specified timer
-    void deleteTimer(unsigned numTimer);
+    void deleteTimer(const uint8_t& numTimer);
 
     // restart the specified timer
-    void restartTimer(unsigned numTimer);
+    void restartTimer(const uint8_t& numTimer);
 
     // returns true if the specified timer is enabled
-    bool isEnabled(unsigned numTimer);
+    bool isEnabled(const uint8_t& numTimer);
 
     // enables the specified timer
-    void enable(unsigned numTimer);
+    void enable(const uint8_t& numTimer);
 
     // disables the specified timer
-    void disable(unsigned numTimer);
+    void disable(const uint8_t& numTimer);
 
     // enables all timers
     void enableAll();
@@ -168,15 +167,18 @@ class ESP32_ISR_Timer
     void disableAll();
 
     // enables the specified timer if it's currently disabled, and vice-versa
-    void toggle(unsigned numTimer);
+    void toggle(const uint8_t& numTimer);
 
     // returns the number of used timers
-    unsigned getNumTimers();
+    int8_t getNumTimers();
 
     // returns the number of available timers
-    unsigned getNumAvailableTimers() 
+    uint8_t getNumAvailableTimers() __attribute__((always_inline))
     {
-      return MAX_NUMBER_TIMERS - numTimers;
+      if (numTimers <= 0)
+        return MAX_NUMBER_TIMERS;
+      else 
+        return MAX_NUMBER_TIMERS - numTimers;
     };
 
   private:
@@ -188,7 +190,7 @@ class ESP32_ISR_Timer
     // low level function to initialize and enable a new timer
     // returns the timer number (numTimer) on success or
     // -1 on failure (f == NULL) or no free timers
-    int setupTimer(unsigned long d, void* f, void* p, bool h, unsigned n);
+    int setupTimer(const unsigned long& delay, void* callback, void* param, bool hasParam, const uint32_t& numRuns) ;
 
     // find the first available slot
     int findFirstFreeSlot();
@@ -200,8 +202,8 @@ class ESP32_ISR_Timer
       void*         param;              // function parameter
       bool          hasParam;           // true if callback takes a parameter
       unsigned long delay;              // delay value
-      unsigned      maxNumRuns;         // number of runs to be executed
-      unsigned      numRuns;            // number of executed runs
+      uint32_t      maxNumRuns;         // number of runs to be executed
+      uint32_t      numRuns;            // number of executed runs
       bool          enabled;            // true if enabled
       unsigned      toBeCalled;         // deferred function call (sort of) - N.B.: only used in run()
     } timer_t;
@@ -209,7 +211,7 @@ class ESP32_ISR_Timer
     volatile timer_t timer[MAX_NUMBER_TIMERS];
 
     // actual number of timers in use (-1 means uninitialized)
-    volatile int numTimers;
+    volatile int8_t numTimers;
 
     // ESP32 is a multi core / multi processing chip. It is mandatory to disable task switches during ISR
     portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;

@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v2.0.0](#releases-v200)
   * [Releases v1.5.0](#releases-v150)
   * [Releases v1.4.1](#releases-v141)
   * [Releases v1.4.0](#releases-v140)
@@ -26,6 +27,13 @@
 ---
 
 ## Changelog
+
+### Releases v2.0.0
+
+1. Restructure library.
+2. Add support to new ESP32_S3. Now supporting ESP32, ESP32_S2, ESP32_S3 and ESP32_C3
+3. Optimize library code by using `reference-passing` instead of `value-passing`
+4. Add example [multiFileProject](examples/multiFileProject) to demo for multiple-file project
 
 ### Releases v1.5.0
 
