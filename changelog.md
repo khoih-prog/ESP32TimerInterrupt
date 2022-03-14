@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v2.0.1](#releases-v201)
   * [Releases v2.0.0](#releases-v200)
   * [Releases v1.5.0](#releases-v150)
   * [Releases v1.4.1](#releases-v141)
@@ -27,6 +28,13 @@
 ---
 
 ## Changelog
+
+### Releases v2.0.1
+
+1. Add example [ISR_16_Timers_Array_Complex_OneShot](examples/ISR_16_Timers_Array_Complex_OneShot) to demo how to use `one-shot ISR-based timer` in complex case
+2. Add example [ISR_16_Timers_Array_OneShot](examples/ISR_16_Timers_Array_OneShot) to demo how to use `one-shot ISR-based timer`
+3. Modify example [multiFileProject](examples/multiFileProject) to demo for more complex multiple-file project
+4. Further optimize code by using passing by `reference` instead of by `value`
 
 ### Releases v2.0.0
 

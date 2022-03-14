@@ -29,7 +29,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.0.0
+  Version: 2.0.1
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -45,6 +45,7 @@
   1.4.1   K.Hoang      14/11/2021 Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1
   1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
   2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
+  2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
 *****************************************************************************************************************************/
 
 #pragma once

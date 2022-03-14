@@ -28,7 +28,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.0.0
+  Version: 2.0.1
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -44,6 +44,7 @@
   1.4.1   K.Hoang      14/11/2021 Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1
   1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
   2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
+  2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
 *****************************************************************************************************************************/
 
 #pragma once
@@ -152,7 +153,7 @@ void IRAM_ATTR ESP32_ISR_Timer::run()
 
 // find the first available slot
 // return -1 if none found
-int ESP32_ISR_Timer::findFirstFreeSlot() 
+int8_t ESP32_ISR_Timer::findFirstFreeSlot() 
 {
   // all slots are used
   if (numTimers >= MAX_NUMBER_TIMERS) 
@@ -174,7 +175,7 @@ int ESP32_ISR_Timer::findFirstFreeSlot()
 }
 
 
-int ESP32_ISR_Timer::setupTimer(const unsigned long& delay, void* callback, void* param, bool hasParam, const uint32_t& numRuns) 
+int8_t ESP32_ISR_Timer::setupTimer(const unsigned long& delay, void* callback, void* param, bool hasParam, const uint32_t& numRuns) 
 {
   int freeTimer;
 
@@ -209,32 +210,32 @@ int ESP32_ISR_Timer::setupTimer(const unsigned long& delay, void* callback, void
 }
 
 
-int ESP32_ISR_Timer::setTimer(const unsigned long& delay, timer_callback callback, const uint32_t& numRuns) 
+int ESP32_ISR_Timer::setTimer(const unsigned long& delay, const timer_callback& callback, const uint32_t& numRuns) 
 {
   return setupTimer(delay, (void *)callback, NULL, false, numRuns);
 }
 
-int ESP32_ISR_Timer::setTimer(const unsigned long& delay, timer_callback_p callback, void* param, const uint32_t& numRuns) 
+int ESP32_ISR_Timer::setTimer(const unsigned long& delay, const timer_callback_p& callback, void* param, const uint32_t& numRuns) 
 {
   return setupTimer(delay, (void *)callback, param, true, numRuns);
 }
 
-int ESP32_ISR_Timer::setInterval(const unsigned long& delay, timer_callback callback) 
+int ESP32_ISR_Timer::setInterval(const unsigned long& delay, const timer_callback& callback) 
 {
   return setupTimer(delay, (void *)callback, NULL, false, TIMER_RUN_FOREVER);
 }
 
-int ESP32_ISR_Timer::setInterval(const unsigned long& delay, timer_callback_p callback, void* param) 
+int ESP32_ISR_Timer::setInterval(const unsigned long& delay, const timer_callback_p& callback, void* param) 
 {
   return setupTimer(delay, (void *)callback, param, true, TIMER_RUN_FOREVER);
 }
 
-int ESP32_ISR_Timer::setTimeout(const unsigned long& delay, timer_callback callback) 
+int ESP32_ISR_Timer::setTimeout(const unsigned long& delay, const timer_callback& callback) 
 {
   return setupTimer(delay, (void *)callback, NULL, false, TIMER_RUN_ONCE);
 }
 
-int ESP32_ISR_Timer::setTimeout(const unsigned long& delay, timer_callback_p callback, void* param) 
+int ESP32_ISR_Timer::setTimeout(const unsigned long& delay, const timer_callback_p& callback, void* param) 
 {
   return setupTimer(delay, (void *)callback, param, true, TIMER_RUN_ONCE);
 }

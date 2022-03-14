@@ -28,7 +28,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.0.0
+  Version: 2.0.1
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -44,6 +44,7 @@
   1.4.1   K.Hoang      14/11/2021 Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1
   1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
   2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
+  2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
 *****************************************************************************************************************************/
 
 #pragma once
@@ -56,13 +57,13 @@
 #endif
 
 #ifndef ESP32_TIMER_INTERRUPT_VERSION
-  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.0"
+  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.1"
   
   #define ESP32_TIMER_INTERRUPT_VERSION_MAJOR     2
   #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     0
-  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     0
+  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     1
 
-  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000000
+  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000001
 #endif
 
 #include "TimerInterrupt_Generic_Debug.h"
@@ -100,9 +101,9 @@ class ESP32_ISR_Timer
 
   public:
     // maximum number of timers
-#define MAX_NUMBER_TIMERS        16
-#define TIMER_RUN_FOREVER       0
-#define TIMER_RUN_ONCE          1
+#define MAX_NUMBER_TIMERS        	16
+#define TIMER_RUN_FOREVER       	0
+#define TIMER_RUN_ONCE          	1
 
     // constructor
     ESP32_ISR_Timer();
@@ -115,32 +116,32 @@ class ESP32_ISR_Timer
     // Timer will call function 'callback' every 'delay' milliseconds forever
     // returns the timer number (numTimer) on success or
     // -1 on failure (callback == NULL) or no free timers
-    int setInterval(const unsigned long& delay, timer_callback callback);
+    int setInterval(const unsigned long& delay, const timer_callback& callback);
 
     // Timer will call function 'callback' with parameter 'param' every 'delay' milliseconds forever
     // returns the timer number (numTimer) on success or
     // -1 on failure (callback == NULL) or no free timers
-    int setInterval(const unsigned long& delay, timer_callback_p callback, void* param);
+    int setInterval(const unsigned long& delay, const timer_callback_p& callback, void* param);
 
     // Timer will call function 'callback' after 'delay' milliseconds one time
     // returns the timer number (numTimer) on success or
     // -1 on failure (callback == NULL) or no free timers
-    int setTimeout(const unsigned long& delay, timer_callback callback);
+    int setTimeout(const unsigned long& delay, const timer_callback& callback);
 
     // Timer will call function 'callback' with parameter 'param' after 'delay' milliseconds one time
     // returns the timer number (numTimer) on success or
     // -1 on failure (callback == NULL) or no free timers
-    int setTimeout(const unsigned long& delay, timer_callback_p callback, void* param);
+    int setTimeout(const unsigned long& delay, const timer_callback_p& callback, void* param);
 
     // Timer will call function 'callback' every 'delay' milliseconds 'numRuns' times
     // returns the timer number (numTimer) on success or
     // -1 on failure (callback == NULL) or no free timers
-    int setTimer(const unsigned long& delay, timer_callback callback, const uint32_t& numRuns);
+    int setTimer(const unsigned long& delay, const timer_callback& callback, const uint32_t& numRuns);
 
     // Timer will call function 'callback' with parameter 'param' every 'delay' milliseconds 'numRuns' times
     // returns the timer number (numTimer) on success or
     // -1 on failure (callback == NULL) or no free timers
-    int setTimer(const unsigned long& delay, timer_callback_p callback, void* param, const uint32_t& numRuns);
+    int setTimer(const unsigned long& delay, const timer_callback_p& callback, void* param, const uint32_t& numRuns);
 
     // updates interval of the specified timer
     bool changeInterval(const uint8_t& numTimer, const unsigned long& delay);
@@ -190,10 +191,10 @@ class ESP32_ISR_Timer
     // low level function to initialize and enable a new timer
     // returns the timer number (numTimer) on success or
     // -1 on failure (f == NULL) or no free timers
-    int setupTimer(const unsigned long& delay, void* callback, void* param, bool hasParam, const uint32_t& numRuns) ;
+    int8_t setupTimer(const unsigned long& delay, void* callback, void* param, bool hasParam, const uint32_t& numRuns) ;
 
     // find the first available slot
-    int findFirstFreeSlot();
+    int8_t findFirstFreeSlot();
 
     typedef struct 
     {

@@ -29,7 +29,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.0.0
+  Version: 2.0.1
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -45,6 +45,7 @@
   1.4.1   K.Hoang      14/11/2021 Avoid using D1 in examples due to issue with core v2.0.0 and v2.0.1
   1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
   2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
+  2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
 *****************************************************************************************************************************/
 
 #pragma once
@@ -68,13 +69,13 @@
 #endif
 
 #ifndef ESP32_TIMER_INTERRUPT_VERSION
-  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.0"
+  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.1"
   
   #define ESP32_TIMER_INTERRUPT_VERSION_MAJOR     2
   #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     0
-  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     0
+  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     1
 
-  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000000
+  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000001
 #endif
 
 #ifndef TIMER_INTERRUPT_DEBUG
@@ -246,7 +247,7 @@ class ESP32TimerInterrupt
 
   public:
 
-    ESP32TimerInterrupt(uint8_t timerNo)
+    ESP32TimerInterrupt(const uint8_t& timerNo)
     {     
       _callback = NULL;
         
@@ -278,7 +279,7 @@ class ESP32TimerInterrupt
 
     // frequency (in hertz) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
     // No params and duration now. To be addes in the future by adding similar functions here or to esp32-hal-timer.c
-    bool setFrequency(const float& frequency, esp32_timer_callback callback)
+    bool setFrequency(const float& frequency, const esp32_timer_callback& callback)
     {
       if (_timerNo < MAX_ESP32_NUM_TIMERS)
       {      
@@ -346,19 +347,19 @@ class ESP32TimerInterrupt
 
     // interval (in microseconds) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
     // No params and duration now. To be addes in the future by adding similar functions here or to esp32-hal-timer.c
-    bool setInterval(const unsigned long& interval, esp32_timer_callback callback)
+    bool setInterval(const unsigned long& interval, const esp32_timer_callback& callback)
     {
       return setFrequency((float) (1000000.0f / interval), callback);
     }
 
-    bool attachInterrupt(const float& frequency, esp32_timer_callback callback)
+    bool attachInterrupt(const float& frequency, const esp32_timer_callback& callback)
     {
       return setFrequency(frequency, callback);
     }
 
     // interval (in microseconds) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
     // No params and duration now. To be addes in the future by adding similar functions here or to esp32-hal-timer.c
-    bool attachInterruptInterval(const unsigned long& interval, esp32_timer_callback callback)
+    bool attachInterruptInterval(const unsigned long& interval, const esp32_timer_callback& callback)
     {
       return setFrequency( (float) ( 1000000.0f / interval), callback);
     }

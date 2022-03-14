@@ -31,7 +31,7 @@ Arduino IDE version: 1.8.19
 ESP32 Core Version 2.0.2
 ESP32S2_DEV Module
 OS: Ubuntu 20.04 LTS
-Linux xy-Inspiron-3593 5.4.0-99-generic #112-Ubuntu SMP Thu Feb 3 13:50:55 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
+Linux xy-Inspiron-3593 5.13.0-35-generic #40~20.04.1-Ubuntu SMP Mon Mar 7 09:18:32 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
 
 Context:
 I encountered a crash while using ESP32TimerInterrupt.
