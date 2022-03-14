@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-  ISR_16_Timers_Array_Complex.ino
+  ISR_16_Timers_Array_Complex_OneShot.ino
   For ESP32, ESP32_S2, ESP32_S3, ESP32_C3 boards with ESP32 core v2.0.2+
   Written by Khoi Hoang
 
@@ -303,10 +303,14 @@ void simpleTimerDoingSomething2s()
     Serial.print(F("Timer : ")); Serial.print(i);
     Serial.print(F(", programmed : ")); Serial.print(curISRTimerData[i].TimerInterval);
     Serial.print(F(", actual : ")); Serial.println(curISRTimerData[i].deltaMillis);
+    // reset to 0 to be sure the timer is running one-shot or permanent
+    curISRTimerData[i].deltaMillis = 0;
 #else
     Serial.print(F("Timer : ")); Serial.print(i);
     Serial.print(F(", programmed : ")); Serial.print(TimerInterval[i]);
     Serial.print(F(", actual : ")); Serial.println(deltaMillis[i]);
+    // reset to 0 to be sure the timer is running one-shot or permanent
+    deltaMillis[i] = 0;
 #endif
   }
 
@@ -322,7 +326,7 @@ void setup()
 
   delay(200);
 
-  Serial.print(F("\nStarting ISR_16_Timers_Array_Complex on ")); Serial.println(ARDUINO_BOARD);
+  Serial.print(F("\nStarting ISR_16_Timers_Array_Complex_OneShot on ")); Serial.println(ARDUINO_BOARD);
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
   Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
 
@@ -343,10 +347,19 @@ void setup()
   {
 #if USE_COMPLEX_STRUCT
     curISRTimerData[i].previousMillis = startMillis;
-    ISR_Timer.setInterval(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
+    // Set even timer one shot, odd timers run forever
+    if ( i % 2 )
+      ISR_Timer.setInterval(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
+    else
+      ISR_Timer.setTimeout(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
 #else
     previousMillis[i] = millis();
-    ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
+
+    // Set even timer one shot, odd timers run forever
+    if ( i % 2 )
+      ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
+    else
+      ISR_Timer.setTimeout(TimerInterval[i], irqCallbackFunc[i]);
 #endif
   }
 

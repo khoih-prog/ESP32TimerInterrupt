@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-  ISR_16_Timers_Array_Complex.ino
+  ISR_16_Timers_Array_OneShot.ino
   For ESP32, ESP32_S2, ESP32_S3, ESP32_C3 boards with ESP32 core v2.0.2+
   Written by Khoi Hoang
 
@@ -31,6 +31,15 @@
    if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly.
    If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled
    or the entire sequence of your code which accesses the data.
+
+   RPM Measuring uses high frequency hardware timer 1Hz == 1ms) to measure the time from of one rotation, in ms
+   then convert to RPM. One rotation is detected by reading the state of a magnetic REED SW or IR LED Sensor
+   Asssuming LOW is active.
+   For example: Max speed is 600RPM => 10 RPS => minimum 100ms a rotation. We'll use 80ms for debouncing
+   If the time between active state is less than 8ms => consider noise.
+   RPM = 60000 / (rotation time in ms)
+
+   We use interrupt to detect whenever the SW is active, set a flag then use timer to count the time between active state
 
    This example will demonstrate the nearly perfect accuracy compared to software timers by printing the actual elapsed millisecs.
    Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet
@@ -67,7 +76,7 @@
   #define LED_RED           27
 #endif
 
-#define HW_TIMER_INTERVAL_US      10000L
+#define HW_TIMER_INTERVAL_MS      1L
 
 volatile uint32_t startMillis = 0;
 
@@ -85,198 +94,119 @@ ESP32_ISR_Timer ISR_Timer;
 bool IRAM_ATTR TimerHandler(void * timerNo)
 { 
   static bool toggle  = false;
+  static bool started = false;
   static int timeRun  = 0;
 
   ISR_Timer.run();
 
   // Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
-  if (++timeRun == ((LED_TOGGLE_INTERVAL_MS * 1000) / HW_TIMER_INTERVAL_US) )
+  if (++timeRun == (LED_TOGGLE_INTERVAL_MS / HW_TIMER_INTERVAL_MS) )
   {
     timeRun = 0;
+
+    if (!started)
+    {
+      started = true;
+      pinMode(LED_BUILTIN, OUTPUT);
+    }
 
     //timer interrupt toggles pin LED_BUILTIN
     digitalWrite(LED_BUILTIN, toggle);
     toggle = !toggle;
   }
-
+  
   return true;
 }
 
-/////////////////////////////////////////////////
-
 #define NUMBER_ISR_TIMERS         16
-
-typedef void (*irqCallback)  ();
-
-/////////////////////////////////////////////////
-
-#define USE_COMPLEX_STRUCT      true
-
-#if USE_COMPLEX_STRUCT
-
-typedef struct
-{
-  irqCallback   irqCallbackFunc;
-  uint32_t      TimerInterval;
-  unsigned long deltaMillis;
-  unsigned long previousMillis;
-} ISRTimerData;
-
-// In ESP32, avoid doing something fancy in ISR, for example Serial.print()
-// The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
-// Or you can get this run-time error / crash
-
-void doingSomething(int index);
-
-#else
-
-volatile unsigned long deltaMillis    [NUMBER_ISR_TIMERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-volatile unsigned long previousMillis [NUMBER_ISR_TIMERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 // You can assign any interval for any timer here, in milliseconds
 uint32_t TimerInterval[NUMBER_ISR_TIMERS] =
 {
-  5000L,  10000L,  15000L,  20000L,  25000L,  30000L,  35000L,  40000L,
-  45000L, 50000L,  55000L,  60000L,  65000L,  70000L,  75000L,  80000L
+  1000L,  2000L,  3000L,  4000L,  5000L,  6000L,  7000L,  8000L,
+  9000L, 10000L, 11000L, 12000L, 13000L, 14000L, 15000L, 16000L
 };
 
-void doingSomething(int index)
-{
-  unsigned long currentMillis  = millis();
+typedef void (*irqCallback)  ();
 
-  deltaMillis[index]    = currentMillis - previousMillis[index];
-  previousMillis[index] = currentMillis;
-}
 
-#endif
-
-////////////////////////////////////
-// Shared
-////////////////////////////////////
-
+// In ESP32, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
+// The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
+// Or you can get this run-time error / crash
 void doingSomething0()
 {
-  doingSomething(0);
 }
 
 void doingSomething1()
 {
-  doingSomething(1);
 }
 
 void doingSomething2()
 {
-  doingSomething(2);
 }
 
 void doingSomething3()
 {
-  doingSomething(3);
 }
 
 void doingSomething4()
 {
-  doingSomething(4);
 }
 
 void doingSomething5()
 {
-  doingSomething(5);
 }
 
 void doingSomething6()
 {
-  doingSomething(6);
 }
 
 void doingSomething7()
 {
-  doingSomething(7);
 }
 
 void doingSomething8()
 {
-  doingSomething(8);
 }
 
 void doingSomething9()
 {
-  doingSomething(9);
 }
 
 void doingSomething10()
 {
-  doingSomething(10);
 }
 
 void doingSomething11()
 {
-  doingSomething(11);
 }
 
 void doingSomething12()
 {
-  doingSomething(12);
 }
 
 void doingSomething13()
 {
-  doingSomething(13);
 }
 
 void doingSomething14()
 {
-  doingSomething(14);
 }
 
 void doingSomething15()
 {
-  doingSomething(15);
 }
-
-#if USE_COMPLEX_STRUCT
-
-ISRTimerData curISRTimerData[NUMBER_ISR_TIMERS] =
-{
-  //irqCallbackFunc, TimerInterval, deltaMillis, previousMillis
-  { doingSomething0,    5000L, 0, 0 },
-  { doingSomething1,   10000L, 0, 0 },
-  { doingSomething2,   15000L, 0, 0 },
-  { doingSomething3,   20000L, 0, 0 },
-  { doingSomething4,   25000L, 0, 0 },
-  { doingSomething5,   30000L, 0, 0 },
-  { doingSomething6,   35000L, 0, 0 },
-  { doingSomething7,   40000L, 0, 0 },
-  { doingSomething8,   45000L, 0, 0 },
-  { doingSomething9,   50000L, 0, 0 },
-  { doingSomething10,  55000L, 0, 0 },
-  { doingSomething11,  60000L, 0, 0 },
-  { doingSomething12,  65000L, 0, 0 },
-  { doingSomething13,  70000L, 0, 0 },
-  { doingSomething14,  75000L, 0, 0 },
-  { doingSomething15,  80000L, 0, 0 }
-};
-
-void doingSomething(int index)
-{
-  unsigned long currentMillis  = millis();
-
-  curISRTimerData[index].deltaMillis    = currentMillis - curISRTimerData[index].previousMillis;
-  curISRTimerData[index].previousMillis = currentMillis;
-}
-
-#else
 
 irqCallback irqCallbackFunc[NUMBER_ISR_TIMERS] =
 {
-  doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3,
-  doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7,
+  doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3, 
+  doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7, 
   doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
   doingSomething12, doingSomething13, doingSomething14, doingSomething15
 };
 
-#endif
-///////////////////////////////////////////
+////////////////////////////////////////////////
+
 
 #define SIMPLE_TIMER_MS        2000L
 
@@ -290,44 +220,26 @@ SimpleTimer simpleTimer;
 void simpleTimerDoingSomething2s()
 {
   static unsigned long previousMillis = startMillis;
-
-  unsigned long currMillis = millis();
-
-  Serial.print(F("SimpleTimer : ")); Serial.print(SIMPLE_TIMER_MS / 1000);
-  Serial.print(F(", ms : ")); Serial.print(currMillis);
-  Serial.print(F(", Dms : ")); Serial.println(currMillis - previousMillis);
-
-  for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
-  {
-#if USE_COMPLEX_STRUCT
-    Serial.print(F("Timer : ")); Serial.print(i);
-    Serial.print(F(", programmed : ")); Serial.print(curISRTimerData[i].TimerInterval);
-    Serial.print(F(", actual : ")); Serial.println(curISRTimerData[i].deltaMillis);
-#else
-    Serial.print(F("Timer : ")); Serial.print(i);
-    Serial.print(F(", programmed : ")); Serial.print(TimerInterval[i]);
-    Serial.print(F(", actual : ")); Serial.println(deltaMillis[i]);
-#endif
-  }
-
-  previousMillis = currMillis;
+  
+  Serial.print(F("simpleTimerDoingSomething2s: Delta programmed ms = ")); Serial.print(SIMPLE_TIMER_MS);
+  Serial.print(F(", actual = ")); Serial.println(millis() - previousMillis);
+  
+  previousMillis = millis();
 }
 
 void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT);
-
   Serial.begin(115200);
   while (!Serial);
 
   delay(200);
 
-  Serial.print(F("\nStarting ISR_16_Timers_Array_Complex on ")); Serial.println(ARDUINO_BOARD);
+  Serial.print(F("\nStarting ISR_16_Timers_Array on ")); Serial.println(ARDUINO_BOARD);
   Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
   Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
 
   // Interval in microsecs
-  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler))
+  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
   {
     startMillis = millis();
     Serial.print(F("Starting ITimer OK, millis() = ")); Serial.println(startMillis);
@@ -335,19 +247,13 @@ void setup()
   else
     Serial.println(F("Can't set ITimer. Select another freq. or timer"));
 
-  startMillis = millis();
-
   // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
   // You can use up to 16 timer for each ISR_Timer
   for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
   {
-#if USE_COMPLEX_STRUCT
-    curISRTimerData[i].previousMillis = startMillis;
-    ISR_Timer.setInterval(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
-#else
-    previousMillis[i] = millis();
-    ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
-#endif
+    //ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
+    // Use this for one shot ISR TImer
+    ISR_Timer.setTimeout(TimerInterval[i], irqCallbackFunc[i]);
   }
 
   // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
