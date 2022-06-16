@@ -28,7 +28,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.0.1
+  Version: 2.0.2
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -45,6 +45,7 @@
   1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
   2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
   2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
+  2.0.2   K Hoang      16/06/2022 Add support to new Adafruit boards
 *****************************************************************************************************************************/
 
 #pragma once

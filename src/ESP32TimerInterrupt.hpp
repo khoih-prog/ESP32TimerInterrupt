@@ -29,7 +29,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.0.1
+  Version: 2.0.2
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -46,6 +46,7 @@
   1.5.0   K.Hoang      18/01/2022 Fix `multiple-definitions` linker error
   2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
   2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
+  2.0.2   K Hoang      16/06/2022 Add support to new Adafruit boards
 *****************************************************************************************************************************/
 
 #pragma once
@@ -54,11 +55,12 @@
 #define ESP32TIMERINTERRUPT_HPP
 
 #if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
-        ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
-        ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
+      ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
+      ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM || ARDUINO_ADAFRUIT_QTPY_ESP32S2)
   #define USING_ESP32_S2_TIMERINTERRUPT         true
 #elif ( defined(ARDUINO_ESP32S3_DEV) || defined(ARDUINO_ESP32_S3_BOX) || defined(ARDUINO_TINYS3) || \
-        defined(ARDUINO_PROS3) || defined(ARDUINO_FEATHERS3) )
+        defined(ARDUINO_PROS3) || defined(ARDUINO_FEATHERS3) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM) || \
+        defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM))
   #define USING_ESP32_S3_TIMERINTERRUPT         true
 #elif ( ARDUINO_ESP32C3_DEV )
   #define USING_ESP32_C3_TIMERINTERRUPT         true  
@@ -69,13 +71,13 @@
 #endif
 
 #ifndef ESP32_TIMER_INTERRUPT_VERSION
-  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.1"
+  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.2"
   
   #define ESP32_TIMER_INTERRUPT_VERSION_MAJOR     2
   #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     0
-  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     1
+  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     2
 
-  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000001
+  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000002
 #endif
 
 #ifndef TIMER_INTERRUPT_DEBUG

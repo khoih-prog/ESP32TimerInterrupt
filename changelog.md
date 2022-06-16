@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v2.0.2](#releases-v202)
   * [Releases v2.0.1](#releases-v201)
   * [Releases v2.0.0](#releases-v200)
   * [Releases v1.5.0](#releases-v150)
@@ -28,6 +29,10 @@
 ---
 
 ## Changelog
+
+### Releases v2.0.2
+
+1. Add support to new Adafruit boards such as QTPY_ESP32S2, FEATHER_ESP32S3_NOPSRAM and QTPY_ESP32S3_NOPSRAM
 
 ### Releases v2.0.1
 
