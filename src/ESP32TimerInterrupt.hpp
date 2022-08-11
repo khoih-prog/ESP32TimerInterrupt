@@ -29,7 +29,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.0.2
+  Version: 2.1.0
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -47,6 +47,7 @@
   2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
   2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
   2.0.2   K Hoang      16/06/2022 Add support to new Adafruit boards
+  2.1.0   K Hoang      03/08/2022 Suppress errors and warnings for new ESP32 core
 *****************************************************************************************************************************/
 
 #pragma once
@@ -71,13 +72,13 @@
 #endif
 
 #ifndef ESP32_TIMER_INTERRUPT_VERSION
-  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.2"
+  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.1.0"
   
   #define ESP32_TIMER_INTERRUPT_VERSION_MAJOR     2
-  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     0
-  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     2
+  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     1
+  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     0
 
-  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000002
+  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2001000
 #endif
 
 #ifndef TIMER_INTERRUPT_DEBUG
@@ -106,8 +107,8 @@
  
 typedef enum
 {
-  TIMER_GROUP_0 = 0, /*!<Hw timer group 0
-  TIMER_GROUP_1 = 1, /*!<Hw timer group 1
+  TIMER_GROUP_0 = 0, // Hw timer group 0
+  TIMER_GROUP_1 = 1, // Hw timer group 1
   TIMER_GROUP_MAX,
 } timer_group_t;
 
@@ -116,8 +117,8 @@ typedef enum
  
 typedef enum 
 {
-  TIMER_0 = 0, /*!<Select timer0 of GROUPx
-  TIMER_1 = 1, /*!<Select timer1 of GROUPx
+  TIMER_0 = 0, // Select timer0 of GROUPx
+  TIMER_1 = 1, // Select timer1 of GROUPx
   TIMER_MAX,
 } timer_idx_t;
 
@@ -182,6 +183,28 @@ typedef struct
   bool auto_reload;                 //Timer auto-reload 
   uint32_t divider;                 //Counter clock divider. The divider's range is from from 2 to 65536. 
 } timer_config_t;
+
+*/
+
+/*
+  //ESP32 core v2.0.4, timer_config_t defined in tools/sdk/esp32/include/hal/include/hal/timer_types.h:
+  #if SOC_TIMER_GROUP_SUPPORT_XTAL
+  typedef enum {
+    TIMER_SRC_CLK_APB = 0,  // Select APB as the source clock
+    TIMER_SRC_CLK_XTAL = 1, // Select XTAL as the source clock
+  } timer_src_clk_t;
+  #endif
+  typedef struct {
+    timer_alarm_t alarm_en;           // Timer alarm enable
+    timer_start_t counter_en;         // Counter enable
+    timer_intr_mode_t intr_type;      // Interrupt mode
+    timer_count_dir_t counter_dir;    // Counter direction
+    timer_autoreload_t auto_reload;   // Timer auto-reload
+    uint32_t divider;                 // Counter clock divider. The divider's range is from from 2 to 65536
+  #if SOC_TIMER_GROUP_SUPPORT_XTAL
+    timer_src_clk_t clk_src;          // Use XTAL as source clock
+  #endif
+  } timer_config_t;
 
 */
 

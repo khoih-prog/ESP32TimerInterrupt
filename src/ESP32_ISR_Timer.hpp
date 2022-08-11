@@ -28,7 +28,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.0.2
+  Version: 2.1.0
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -46,6 +46,7 @@
   2.0.0   K Hoang      13/02/2022 Add support to new ESP32-S3. Restructure library.
   2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
   2.0.2   K Hoang      16/06/2022 Add support to new Adafruit boards
+  2.1.0   K Hoang      03/08/2022 Suppress errors and warnings for new ESP32 core
 *****************************************************************************************************************************/
 
 #pragma once
@@ -58,13 +59,13 @@
 #endif
 
 #ifndef ESP32_TIMER_INTERRUPT_VERSION
-  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.0.2"
+  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.1.0"
   
   #define ESP32_TIMER_INTERRUPT_VERSION_MAJOR     2
-  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     0
-  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     2
+  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     1
+  #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     0
 
-  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2000002
+  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2001000
 #endif
 
 #include "TimerInterrupt_Generic_Debug.h"

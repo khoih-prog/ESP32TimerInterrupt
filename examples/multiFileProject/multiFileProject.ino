@@ -13,8 +13,8 @@
   #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP32_TIMER_INTERRUPT_VERSION_MIN_TARGET      "ESP32TimerInterrupt v2.0.1"
-#define ESP32_TIMER_INTERRUPT_VERSION_MIN             2000001
+#define ESP32_TIMER_INTERRUPT_VERSION_MIN_TARGET      "ESP32TimerInterrupt v2.1.0"
+#define ESP32_TIMER_INTERRUPT_VERSION_MIN             2001000
 
 #include "multiFileProject.h"
 

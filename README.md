@@ -138,7 +138,7 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ## Prerequisites
 
 1. [`Arduino IDE 1.8.19+` for Arduino](https://github.com/arduino/Arduino). [![GitHub release](https://img.shields.io/github/release/arduino/Arduino.svg)](https://github.com/arduino/Arduino/releases/latest)
-2. [`ESP32 Core 2.0.3+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/).
+2. [`ESP32 Core 2.0.4+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/).
 3. [`SimpleTimer library`](https://github.com/jfturcot/SimpleTimer) to use with some examples.
 
 ---
@@ -333,7 +333,7 @@ The following is the sample terminal output when running example [TimerInterrupt
 
 ```
 Starting TimerInterruptTest on ESP32C3_DEV
-ESP32TimerInterrupt v2.0.2
+ESP32TimerInterrupt v2.1.0
 CPU Frequency = 160 MHz
 [TISR] ESP32_TimerInterrupt: _timerNo = 0 , _fre = 1000000
 [TISR] TIMER_BASE_CLK = 80000000 , TIMER_DIVIDER = 80
@@ -368,7 +368,7 @@ The following is the sample terminal output when running example [Change_Interva
 
 ```
 Starting Change_Interval on ESP32C3_DEV
-ESP32TimerInterrupt v2.0.2
+ESP32TimerInterrupt v2.1.0
 CPU Frequency = 160 MHz
 Starting  ITimer0 OK, millis() = 293
 Starting  ITimer1 OK, millis() = 303
@@ -403,7 +403,7 @@ The following is the sample terminal output when running example [Argument_None]
 
 ```
 Starting Argument_None on ESP32S3_DEV
-ESP32TimerInterrupt v2.0.2
+ESP32TimerInterrupt v2.1.0
 CPU Frequency = 240 MHz
 [TISR] ESP32_S3_TimerInterrupt: _timerNo = 0 , _fre = 1000000
 [TISR] TIMER_BASE_CLK = 80000000 , TIMER_DIVIDER = 80
@@ -427,7 +427,7 @@ The following is the sample terminal output when running example [ISR_16_Timers_
 
 ```
 Starting ISR_16_Timers_Array_Complex on ESP32S3_DEV
-ESP32TimerInterrupt v2.0.2
+ESP32TimerInterrupt v2.1.0
 CPU Frequency = 240 MHz
 [TISR] ESP32_S3_TimerInterrupt: _timerNo = 1 , _fre = 1000000
 [TISR] TIMER_BASE_CLK = 80000000 , TIMER_DIVIDER = 80
@@ -601,7 +601,7 @@ The following is the sample terminal output when running example [ISR_16_Timers_
 
 ```
 Starting ISR_16_Timers_Array on ESP32S3_DEV
-ESP32TimerInterrupt v2.0.2
+ESP32TimerInterrupt v2.1.0
 CPU Frequency = 240 MHz
 [TISR] ESP32_S3_TimerInterrupt: _timerNo = 1 , _fre = 1000000
 [TISR] TIMER_BASE_CLK = 80000000 , TIMER_DIVIDER = 80
@@ -624,7 +624,7 @@ The following is the sample terminal output when running example [ISR_16_Timers_
 
 ```
 Starting ISR_16_Timers_Array_Complex on ESP32C3_DEV
-ESP32TimerInterrupt v2.0.2
+ESP32TimerInterrupt v2.1.0
 CPU Frequency = 160 MHz
 [TISR] ESP32_TimerInterrupt: _timerNo = 1 , _fre = 1000000
 [TISR] TIMER_BASE_CLK = 80000000 , TIMER_DIVIDER = 80
