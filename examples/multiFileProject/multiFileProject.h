@@ -18,13 +18,13 @@
 #define TIMER_INTERRUPT_DEBUG         2
 #define _TIMERINTERRUPT_LOGLEVEL_     0
 
-#ifndef LED_BUILTIN
-  #define LED_BUILTIN       2
-#endif
-
 // Can be included as many times as necessary, without `Multiple Definitions` Linker Error
 #include "ESP32TimerInterrupt.hpp"
 #include "ESP32_ISR_Timer.hpp"
+
+#ifndef LED_BUILTIN
+  #define LED_BUILTIN       2
+#endif
 
 extern ESP32_ISR_Timer ISR_Timer;  // declaration of the global variable ISRTimer
 

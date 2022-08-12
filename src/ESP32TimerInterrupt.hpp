@@ -29,7 +29,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.1.0
+  Version: 2.2.0
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -48,6 +48,7 @@
   2.0.1   K Hoang      13/03/2022 Add example to demo how to use one-shot ISR-based timers. Optimize code
   2.0.2   K Hoang      16/06/2022 Add support to new Adafruit boards
   2.1.0   K Hoang      03/08/2022 Suppress errors and warnings for new ESP32 core
+  2.2.0   K Hoang      11/08/2022 Add support and suppress warnings for ESP32_C3, ESP32_S2 and ESP32_S3 boards
 *****************************************************************************************************************************/
 
 #pragma once
@@ -57,28 +58,50 @@
 
 #if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
       ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
-      ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM || ARDUINO_ADAFRUIT_QTPY_ESP32S2)
+      ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM || ARDUINO_ADAFRUIT_QTPY_ESP32S2 || ARDUINO_ESP32S2_USB || \
+      ARDUINO_FEATHERS2NEO || ARDUINO_TINYS2 || ARDUINO_RMP || ARDUINO_LOLIN_S2_MINI || ARDUINO_LOLIN_S2_PICO || \
+      ARDUINO_ADAFRUIT_FEATHER_ESP32S2 || ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT  || ARDUINO_atmegazero_esp32s2 || \
+      ARDUINO_DYM || ARDUINO_FRANZININHO_WIFI  || ARDUINO_FRANZININHO_WIFI_MSC )
   #define USING_ESP32_S2_TIMERINTERRUPT         true
+  
+  #if (_TIMERINTERRUPT_LOGLEVEL_ > 3)
+    #warning USING_ESP32_S2_TIMERINTERRUPT
+  #endif
 #elif ( defined(ARDUINO_ESP32S3_DEV) || defined(ARDUINO_ESP32_S3_BOX) || defined(ARDUINO_TINYS3) || \
         defined(ARDUINO_PROS3) || defined(ARDUINO_FEATHERS3) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM) || \
-        defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM))
+        defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) || defined(ARDUINO_ESP32S3_CAM_LCD) || \
+        defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) || \
+        defined(ARDUINO_ESP32_S3_USB_OTG) )
   #define USING_ESP32_S3_TIMERINTERRUPT         true
-#elif ( ARDUINO_ESP32C3_DEV )
-  #define USING_ESP32_C3_TIMERINTERRUPT         true  
+  
+  #if (_TIMERINTERRUPT_LOGLEVEL_ > 3)
+    #warning USING_ESP32_S3_TIMERINTERRUPT
+  #endif
+#elif ( defined(ARDUINO_ESP32C3_DEV) || defined(ARDUINO_LOLIN_C3_MINI) || defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || \
+        defined(ARDUINO_AirM2M_CORE_ESP32C3) || defined(ARDUINO_XIAO_ESP32C3) )
+  #define USING_ESP32_C3_TIMERINTERRUPT         true
+  
+  #if (_TIMERINTERRUPT_LOGLEVEL_ > 3)
+    #warning USING_ESP32_C3_TIMERINTERRUPT
+  #endif
 #elif defined(ESP32)
-  #define USING_ESP32_TIMERINTERRUPT            true  
+  #define USING_ESP32_TIMERINTERRUPT            true 
+  
+  #if (_TIMERINTERRUPT_LOGLEVEL_ > 3)
+    #warning USING_ESP32_TIMERINTERRUPT
+  #endif 
 #else
   #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.  
 #endif
 
 #ifndef ESP32_TIMER_INTERRUPT_VERSION
-  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.1.0"
+  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.2.0"
   
   #define ESP32_TIMER_INTERRUPT_VERSION_MAJOR     2
-  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     1
+  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     2
   #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     0
 
-  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2001000
+  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2002000
 #endif
 
 #ifndef TIMER_INTERRUPT_DEBUG
@@ -254,8 +277,11 @@ class ESP32TimerInterrupt
       .counter_en   = TIMER_START,          //starts counting counter once timer_init called
       .intr_type    = TIMER_INTR_MAX,
       .counter_dir  = TIMER_COUNT_UP,       //counts from 0 to counter value
-      .auto_reload  = TIMER_AUTORELOAD_EN,  // reloads counter automatically
-      .divider      = TIMER_DIVIDER
+      .auto_reload  = TIMER_AUTORELOAD_EN,  //reloads counter automatically
+      .divider      = TIMER_DIVIDER,
+#if SOC_TIMER_GROUP_SUPPORT_XTAL
+      .clk_src      = TIMER_SRC_CLK_XTAL    //Use XTAL as source clock
+#endif      
     };
 
     timer_idx_t       _timerIndex;

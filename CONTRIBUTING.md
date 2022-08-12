@@ -19,7 +19,7 @@ Please ensure to specify the following:
 * `ESP32` Board type (e.g. ESP32_DEV Module, etc.)
 * `ESP32-S2` Board type (e.g. ESP32S2_DEV Module, ESP32_S2_Saola, etc.)
 * `ESP32_S3` Board type (e.g. ESP32S3_DEV, ESP32_S3_BOX, UM TINYS3, UM PROS3, UM FEATHERS3, etc.)
-* `ESP32-C3` Board type (e.g. ESP32C3_DEV Module, etc.)
+* `ESP32-C3` Board type (e.g. ESP32C3_DEV Module, LOLIN_C3_MINI, DFROBOT_BEETLE_ESP32_C3, ADAFRUIT_QTPY_ESP32C3, AirM2M_CORE_ESP32C3, XIAO_ESP32C3, etc.)
 * Contextual information (e.g. what you were trying to achieve)
 * Simplest possible steps to reproduce
 * Anything that might be relevant in your opinion, such as:
