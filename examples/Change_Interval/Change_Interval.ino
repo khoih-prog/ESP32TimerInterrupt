@@ -9,10 +9,10 @@
   The ESP32, ESP32_S2, ESP32_S3, ESP32_C3 have two timer groups, TIMER_GROUP_0 and TIMER_GROUP_1
   1) each group of ESP32, ESP32_S2, ESP32_S3 has two general purpose hardware timers, TIMER_0 and TIMER_1
   2) each group of ESP32_C3 has ony one general purpose hardware timer, TIMER_0
-  
-  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers. 
-  The timer counters can be configured to count up or down and support automatic reload and software reload. 
-  They can also generate alarms when they reach a specific value, defined by the software. 
+
+  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers.
+  The timer counters can be configured to count up or down and support automatic reload and software reload.
+  They can also generate alarms when they reach a specific value, defined by the software.
   The value of the counter can be read by the software program.
 
   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
@@ -35,7 +35,7 @@
 */
 
 #if !defined( ESP32 )
-  #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
+	#error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
 
 // These define's must be placed at the beginning before #include "ESP32_New_TimerInterrupt.h"
@@ -44,13 +44,10 @@
 // To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
 #include "ESP32TimerInterrupt.h"
 
-#ifndef LED_BUILTIN
-  #define LED_BUILTIN       2         // Pin D2 mapped to pin GPIO2/ADC12 of ESP32, control on-board LED
-#endif
-
 // Don't use PIN_D1 in core v2.0.0 and v2.0.1. Check https://github.com/espressif/arduino-esp32/issues/5868
-#define PIN_D2              2         // Pin D2 mapped to pin GPIO2/ADC12/TOUCH2/LED_BUILTIN of ESP32
-#define PIN_D3              3         // Pin D3 mapped to pin GPIO3/RX0 of ESP32
+// Don't use PIN_D2 with ESP32_C3 (crash)
+#define PIN_D19             19        // Pin D19 mapped to pin GPIO9 of ESP32
+#define PIN_D3               3        // Pin D3 mapped to pin GPIO3/RX0 of ESP32
 
 volatile uint32_t Timer0Count = 0;
 volatile uint32_t Timer1Count = 0;
@@ -59,41 +56,44 @@ volatile uint32_t Timer1Count = 0;
 // and you can't use float calculation inside ISR
 // Only OK in core v1.0.6-
 bool IRAM_ATTR TimerHandler0(void * timerNo)
-{ 
-  static bool toggle0 = false;
+{
+	static bool toggle0 = false;
 
-  // Flag for checking to be sure ISR is working as Serial.print is not OK here in ISR
-  Timer0Count++;
+	// Flag for checking to be sure ISR is working as Serial.print is not OK here in ISR
+	Timer0Count++;
 
-  //timer interrupt toggles pin LED_BUILTIN
-  digitalWrite(LED_BUILTIN, toggle0);
-  toggle0 = !toggle0;
+	//timer interrupt toggles pin PIN_D19
+	digitalWrite(PIN_D19, toggle0);
+	toggle0 = !toggle0;
 
-  return true;
+	return true;
 }
 
 // With core v2.0.0+, you can't use Serial.print/println in ISR or crash.
 // and you can't use float calculation inside ISR
 // Only OK in core v1.0.6-
 bool IRAM_ATTR TimerHandler1(void * timerNo)
-{  
-  static bool toggle1 = false;
+{
+	static bool toggle1 = false;
 
-  // Flag for checking to be sure ISR is working as Serial.print is not OK here in ISR
-  Timer1Count++;
+	// Flag for checking to be sure ISR is working as Serial.print is not OK here in ISR
+	Timer1Count++;
 
-  //timer interrupt toggles PIN_D3
-  digitalWrite(PIN_D3, toggle1);
-  toggle1 = !toggle1;
+	//timer interrupt toggles PIN_D3
+	digitalWrite(PIN_D3, toggle1);
+	toggle1 = !toggle1;
 
-  return true;
+	return true;
 }
 
 void printResult(uint32_t currTime)
 {
-  Serial.print(F("Time = ")); Serial.print(currTime); 
-  Serial.print(F(", Timer0Count = ")); Serial.print(Timer0Count);
-  Serial.print(F(", Timer1Count = ")); Serial.println(Timer1Count);
+	Serial.print(F("Time = "));
+	Serial.print(currTime);
+	Serial.print(F(", Timer0Count = "));
+	Serial.print(Timer0Count);
+	Serial.print(F(", Timer1Count = "));
+	Serial.println(Timer1Count);
 }
 
 #define TIMER0_INTERVAL_MS        2000
@@ -106,33 +106,39 @@ ESP32Timer ITimer1(1);
 
 void setup()
 {
-  pinMode(LED_BUILTIN,  OUTPUT);
-  pinMode(PIN_D3,       OUTPUT);
-  
-  Serial.begin(115200);
-  while (!Serial);
+	pinMode(PIN_D19,  OUTPUT);
+	pinMode(PIN_D3,       OUTPUT);
 
-  delay(200);
+	Serial.begin(115200);
 
-  Serial.print(F("\nStarting Change_Interval on ")); Serial.println(ARDUINO_BOARD);
-  Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
-  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
+	while (!Serial && millis() < 5000);
 
-  // Interval in microsecs
-  if (ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 1000, TimerHandler0))
-  {
-    Serial.print(F("Starting  ITimer0 OK, millis() = ")); Serial.println(millis());
-  }
-  else
-    Serial.println(F("Can't set ITimer0. Select another freq. or timer"));
+  delay(500);
 
-  // Interval in microsecs
-  if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS * 1000, TimerHandler1))
-  {
-    Serial.print(F("Starting  ITimer1 OK, millis() = ")); Serial.println(millis());
-  }
-  else
-    Serial.println(F("Can't set ITimer1. Select another freq. or timer"));
+	Serial.print(F("\nStarting Change_Interval on "));
+	Serial.println(ARDUINO_BOARD);
+	Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+	Serial.print(F("CPU Frequency = "));
+	Serial.print(F_CPU / 1000000);
+	Serial.println(F(" MHz"));
+
+	// Interval in microsecs
+	if (ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 1000, TimerHandler0))
+	{
+		Serial.print(F("Starting  ITimer0 OK, millis() = "));
+		Serial.println(millis());
+	}
+	else
+		Serial.println(F("Can't set ITimer0. Select another freq. or timer"));
+
+	// Interval in microsecs
+	if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS * 1000, TimerHandler1))
+	{
+		Serial.print(F("Starting  ITimer1 OK, millis() = "));
+		Serial.println(millis());
+	}
+	else
+		Serial.println(F("Can't set ITimer1. Select another freq. or timer"));
 }
 
 #define CHECK_INTERVAL_MS     10000L
@@ -140,30 +146,32 @@ void setup()
 
 void loop()
 {
-  static uint32_t lastTime = 0;
-  static uint32_t lastChangeTime = 0;
-  static uint32_t currTime;
-  static uint32_t multFactor = 0;
+	static uint32_t lastTime = 0;
+	static uint32_t lastChangeTime = 0;
+	static uint32_t currTime;
+	static uint32_t multFactor = 0;
 
-  currTime = millis();
+	currTime = millis();
 
-  if (currTime - lastTime > CHECK_INTERVAL_MS)
-  {
-    printResult(currTime);
-    lastTime = currTime;
+	if (currTime - lastTime > CHECK_INTERVAL_MS)
+	{
+		printResult(currTime);
+		lastTime = currTime;
 
-    if (currTime - lastChangeTime > CHANGE_INTERVAL_MS)
-    {
-      //setInterval(unsigned long interval, timerCallback callback)
-      multFactor = (multFactor + 1) % 2;
-      
-      ITimer0.setInterval(TIMER0_INTERVAL_MS * 1000 * (multFactor + 1), TimerHandler0);
-      ITimer1.setInterval(TIMER1_INTERVAL_MS * 1000 * (multFactor + 1), TimerHandler1);
+		if (currTime - lastChangeTime > CHANGE_INTERVAL_MS)
+		{
+			//setInterval(unsigned long interval, timerCallback callback)
+			multFactor = (multFactor + 1) % 2;
 
-      Serial.print(F("Changing Interval, Timer0 = ")); Serial.print(TIMER0_INTERVAL_MS * (multFactor + 1));
-      Serial.print(F(",  Timer1 = ")); Serial.println(TIMER1_INTERVAL_MS * (multFactor + 1)); 
+			ITimer0.setInterval(TIMER0_INTERVAL_MS * 1000 * (multFactor + 1), TimerHandler0);
+			ITimer1.setInterval(TIMER1_INTERVAL_MS * 1000 * (multFactor + 1), TimerHandler1);
 
-      lastChangeTime = currTime;
-    }
-  }
+			Serial.print(F("Changing Interval, Timer0 = "));
+			Serial.print(TIMER0_INTERVAL_MS * (multFactor + 1));
+			Serial.print(F(",  Timer1 = "));
+			Serial.println(TIMER1_INTERVAL_MS * (multFactor + 1));
+
+			lastChangeTime = currTime;
+		}
+	}
 }

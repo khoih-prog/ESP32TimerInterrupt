@@ -9,10 +9,10 @@
   The ESP32, ESP32_S2, ESP32_S3, ESP32_C3 have two timer groups, TIMER_GROUP_0 and TIMER_GROUP_1
   1) each group of ESP32, ESP32_S2, ESP32_S3 has two general purpose hardware timers, TIMER_0 and TIMER_1
   2) each group of ESP32_C3 has ony one general purpose hardware timer, TIMER_0
-  
-  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers. 
-  The timer counters can be configured to count up or down and support automatic reload and software reload. 
-  They can also generate alarms when they reach a specific value, defined by the software. 
+
+  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers.
+  The timer counters can be configured to count up or down and support automatic reload and software reload.
+  They can also generate alarms when they reach a specific value, defined by the software.
   The value of the counter can be read by the software program.
 
   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
@@ -42,7 +42,7 @@
 */
 
 #if !defined( ESP32 )
-  #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
+	#error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
 
 // These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
@@ -55,17 +55,18 @@
 
 // Don't use PIN_D1 in core v2.0.0 and v2.0.1. Check https://github.com/espressif/arduino-esp32/issues/5868
 
-#ifndef LED_BUILTIN
-  #define LED_BUILTIN       2
-#endif
-
 #ifndef LED_BLUE
-  #define LED_BLUE          25
+	#define LED_BLUE          25
 #endif
 
 #ifndef LED_RED
-  #define LED_RED           27
+	#define LED_RED           27
 #endif
+
+// Don't use PIN_D1 in core v2.0.0 and v2.0.1. Check https://github.com/espressif/arduino-esp32/issues/5868
+// Don't use PIN_D2 with ESP32_C3 (crash)
+#define PIN_D19             19        // Pin D19 mapped to pin GPIO9 of ESP32
+#define PIN_D3               3        // Pin D3 mapped to pin GPIO3/RX0 of ESP32
 
 #define HW_TIMER_INTERVAL_US      10000L
 
@@ -83,23 +84,23 @@ ESP32_ISR_Timer ISR_Timer;
 // and you can't use float calculation inside ISR
 // Only OK in core v1.0.6-
 bool IRAM_ATTR TimerHandler(void * timerNo)
-{ 
-  static bool toggle  = false;
-  static int timeRun  = 0;
+{
+	static bool toggle  = false;
+	static int timeRun  = 0;
 
-  ISR_Timer.run();
+	ISR_Timer.run();
 
-  // Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
-  if (++timeRun == ((LED_TOGGLE_INTERVAL_MS * 1000) / HW_TIMER_INTERVAL_US) )
-  {
-    timeRun = 0;
+	// Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
+	if (++timeRun == ((LED_TOGGLE_INTERVAL_MS * 1000) / HW_TIMER_INTERVAL_US) )
+	{
+		timeRun = 0;
 
-    //timer interrupt toggles pin LED_BUILTIN
-    digitalWrite(LED_BUILTIN, toggle);
-    toggle = !toggle;
-  }
+		//timer interrupt toggles pin PIN_D19
+		digitalWrite(PIN_D19, toggle);
+		toggle = !toggle;
+	}
 
-  return true;
+	return true;
 }
 
 /////////////////////////////////////////////////
@@ -116,10 +117,10 @@ typedef void (*irqCallback)  ();
 
 typedef struct
 {
-  irqCallback   irqCallbackFunc;
-  uint32_t      TimerInterval;
-  unsigned long deltaMillis;
-  unsigned long previousMillis;
+	irqCallback   irqCallbackFunc;
+	uint32_t      TimerInterval;
+	unsigned long deltaMillis;
+	unsigned long previousMillis;
 } ISRTimerData;
 
 // In ESP32, avoid doing something fancy in ISR, for example Serial.print()
@@ -136,16 +137,16 @@ volatile unsigned long previousMillis [NUMBER_ISR_TIMERS] = { 0, 0, 0, 0, 0, 0, 
 // You can assign any interval for any timer here, in milliseconds
 uint32_t TimerInterval[NUMBER_ISR_TIMERS] =
 {
-  5000L,  10000L,  15000L,  20000L,  25000L,  30000L,  35000L,  40000L,
-  45000L, 50000L,  55000L,  60000L,  65000L,  70000L,  75000L,  80000L
+	5000L,  10000L,  15000L,  20000L,  25000L,  30000L,  35000L,  40000L,
+	45000L, 50000L,  55000L,  60000L,  65000L,  70000L,  75000L,  80000L
 };
 
 void doingSomething(int index)
 {
-  unsigned long currentMillis  = millis();
+	unsigned long currentMillis  = millis();
 
-  deltaMillis[index]    = currentMillis - previousMillis[index];
-  previousMillis[index] = currentMillis;
+	deltaMillis[index]    = currentMillis - previousMillis[index];
+	previousMillis[index] = currentMillis;
 }
 
 #endif
@@ -156,123 +157,123 @@ void doingSomething(int index)
 
 void doingSomething0()
 {
-  doingSomething(0);
+	doingSomething(0);
 }
 
 void doingSomething1()
 {
-  doingSomething(1);
+	doingSomething(1);
 }
 
 void doingSomething2()
 {
-  doingSomething(2);
+	doingSomething(2);
 }
 
 void doingSomething3()
 {
-  doingSomething(3);
+	doingSomething(3);
 }
 
 void doingSomething4()
 {
-  doingSomething(4);
+	doingSomething(4);
 }
 
 void doingSomething5()
 {
-  doingSomething(5);
+	doingSomething(5);
 }
 
 void doingSomething6()
 {
-  doingSomething(6);
+	doingSomething(6);
 }
 
 void doingSomething7()
 {
-  doingSomething(7);
+	doingSomething(7);
 }
 
 void doingSomething8()
 {
-  doingSomething(8);
+	doingSomething(8);
 }
 
 void doingSomething9()
 {
-  doingSomething(9);
+	doingSomething(9);
 }
 
 void doingSomething10()
 {
-  doingSomething(10);
+	doingSomething(10);
 }
 
 void doingSomething11()
 {
-  doingSomething(11);
+	doingSomething(11);
 }
 
 void doingSomething12()
 {
-  doingSomething(12);
+	doingSomething(12);
 }
 
 void doingSomething13()
 {
-  doingSomething(13);
+	doingSomething(13);
 }
 
 void doingSomething14()
 {
-  doingSomething(14);
+	doingSomething(14);
 }
 
 void doingSomething15()
 {
-  doingSomething(15);
+	doingSomething(15);
 }
 
 #if USE_COMPLEX_STRUCT
 
 ISRTimerData curISRTimerData[NUMBER_ISR_TIMERS] =
 {
-  //irqCallbackFunc, TimerInterval, deltaMillis, previousMillis
-  { doingSomething0,    5000L, 0, 0 },
-  { doingSomething1,   10000L, 0, 0 },
-  { doingSomething2,   15000L, 0, 0 },
-  { doingSomething3,   20000L, 0, 0 },
-  { doingSomething4,   25000L, 0, 0 },
-  { doingSomething5,   30000L, 0, 0 },
-  { doingSomething6,   35000L, 0, 0 },
-  { doingSomething7,   40000L, 0, 0 },
-  { doingSomething8,   45000L, 0, 0 },
-  { doingSomething9,   50000L, 0, 0 },
-  { doingSomething10,  55000L, 0, 0 },
-  { doingSomething11,  60000L, 0, 0 },
-  { doingSomething12,  65000L, 0, 0 },
-  { doingSomething13,  70000L, 0, 0 },
-  { doingSomething14,  75000L, 0, 0 },
-  { doingSomething15,  80000L, 0, 0 }
+	//irqCallbackFunc, TimerInterval, deltaMillis, previousMillis
+	{ doingSomething0,    5000L, 0, 0 },
+	{ doingSomething1,   10000L, 0, 0 },
+	{ doingSomething2,   15000L, 0, 0 },
+	{ doingSomething3,   20000L, 0, 0 },
+	{ doingSomething4,   25000L, 0, 0 },
+	{ doingSomething5,   30000L, 0, 0 },
+	{ doingSomething6,   35000L, 0, 0 },
+	{ doingSomething7,   40000L, 0, 0 },
+	{ doingSomething8,   45000L, 0, 0 },
+	{ doingSomething9,   50000L, 0, 0 },
+	{ doingSomething10,  55000L, 0, 0 },
+	{ doingSomething11,  60000L, 0, 0 },
+	{ doingSomething12,  65000L, 0, 0 },
+	{ doingSomething13,  70000L, 0, 0 },
+	{ doingSomething14,  75000L, 0, 0 },
+	{ doingSomething15,  80000L, 0, 0 }
 };
 
 void doingSomething(int index)
 {
-  unsigned long currentMillis  = millis();
+	unsigned long currentMillis  = millis();
 
-  curISRTimerData[index].deltaMillis    = currentMillis - curISRTimerData[index].previousMillis;
-  curISRTimerData[index].previousMillis = currentMillis;
+	curISRTimerData[index].deltaMillis    = currentMillis - curISRTimerData[index].previousMillis;
+	curISRTimerData[index].previousMillis = currentMillis;
 }
 
 #else
 
 irqCallback irqCallbackFunc[NUMBER_ISR_TIMERS] =
 {
-  doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3,
-  doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7,
-  doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
-  doingSomething12, doingSomething13, doingSomething14, doingSomething15
+	doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3,
+	doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7,
+	doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
+	doingSomething12, doingSomething13, doingSomething14, doingSomething15
 };
 
 #endif
@@ -289,95 +290,112 @@ SimpleTimer simpleTimer;
 // 2. Very long "do", "while", "for" loops without predetermined exit time.
 void simpleTimerDoingSomething2s()
 {
-  static unsigned long previousMillis = startMillis;
+	static unsigned long previousMillis = startMillis;
 
-  unsigned long currMillis = millis();
+	unsigned long currMillis = millis();
 
-  Serial.print(F("SimpleTimer : ")); Serial.print(SIMPLE_TIMER_MS / 1000);
-  Serial.print(F(", ms : ")); Serial.print(currMillis);
-  Serial.print(F(", Dms : ")); Serial.println(currMillis - previousMillis);
+	Serial.print(F("SimpleTimer : "));
+	Serial.print(SIMPLE_TIMER_MS / 1000);
+	Serial.print(F(", ms : "));
+	Serial.print(currMillis);
+	Serial.print(F(", Dms : "));
+	Serial.println(currMillis - previousMillis);
 
-  for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
-  {
+	for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
+	{
 #if USE_COMPLEX_STRUCT
-    Serial.print(F("Timer : ")); Serial.print(i);
-    Serial.print(F(", programmed : ")); Serial.print(curISRTimerData[i].TimerInterval);
-    Serial.print(F(", actual : ")); Serial.println(curISRTimerData[i].deltaMillis);
-    // reset to 0 to be sure the timer is running one-shot or permanent
-    curISRTimerData[i].deltaMillis = 0;
+		Serial.print(F("Timer : "));
+		Serial.print(i);
+		Serial.print(F(", programmed : "));
+		Serial.print(curISRTimerData[i].TimerInterval);
+		Serial.print(F(", actual : "));
+		Serial.println(curISRTimerData[i].deltaMillis);
+		// reset to 0 to be sure the timer is running one-shot or permanent
+		curISRTimerData[i].deltaMillis = 0;
 #else
-    Serial.print(F("Timer : ")); Serial.print(i);
-    Serial.print(F(", programmed : ")); Serial.print(TimerInterval[i]);
-    Serial.print(F(", actual : ")); Serial.println(deltaMillis[i]);
-    // reset to 0 to be sure the timer is running one-shot or permanent
-    deltaMillis[i] = 0;
+		Serial.print(F("Timer : "));
+		Serial.print(i);
+		Serial.print(F(", programmed : "));
+		Serial.print(TimerInterval[i]);
+		Serial.print(F(", actual : "));
+		Serial.println(deltaMillis[i]);
+		// reset to 0 to be sure the timer is running one-shot or permanent
+		deltaMillis[i] = 0;
 #endif
-  }
+	}
 
-  previousMillis = currMillis;
+	previousMillis = currMillis;
 }
 
 void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(PIN_D19, OUTPUT);
 
-  Serial.begin(115200);
-  while (!Serial);
+	Serial.begin(115200);
 
-  delay(200);
+	while (!Serial && millis() < 5000);
 
-  Serial.print(F("\nStarting ISR_16_Timers_Array_Complex_OneShot on ")); Serial.println(ARDUINO_BOARD);
-  Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
-  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
+  delay(500);
 
-  // Interval in microsecs
-  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler))
-  {
-    startMillis = millis();
-    Serial.print(F("Starting ITimer OK, millis() = ")); Serial.println(startMillis);
-  }
-  else
-    Serial.println(F("Can't set ITimer. Select another freq. or timer"));
+	Serial.print(F("\nStarting ISR_16_Timers_Array_Complex_OneShot on "));
+	Serial.println(ARDUINO_BOARD);
+	Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+	Serial.print(F("CPU Frequency = "));
+	Serial.print(F_CPU / 1000000);
+	Serial.println(F(" MHz"));
 
-  startMillis = millis();
+	// Interval in microsecs
+	if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler))
+	{
+		startMillis = millis();
+		Serial.print(F("Starting ITimer OK, millis() = "));
+		Serial.println(startMillis);
+	}
+	else
+		Serial.println(F("Can't set ITimer. Select another freq. or timer"));
 
-  // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
-  // You can use up to 16 timer for each ISR_Timer
-  for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
-  {
+	startMillis = millis();
+
+	// Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
+	// You can use up to 16 timer for each ISR_Timer
+	for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
+	{
 #if USE_COMPLEX_STRUCT
-    curISRTimerData[i].previousMillis = startMillis;
-    // Set even timer one shot, odd timers run forever
-    if ( i % 2 )
-      ISR_Timer.setInterval(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
-    else
-      ISR_Timer.setTimeout(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
+		curISRTimerData[i].previousMillis = startMillis;
+
+		// Set even timer one shot, odd timers run forever
+		if ( i % 2 )
+			ISR_Timer.setInterval(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
+		else
+			ISR_Timer.setTimeout(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
+
 #else
-    previousMillis[i] = millis();
+		previousMillis[i] = millis();
 
-    // Set even timer one shot, odd timers run forever
-    if ( i % 2 )
-      ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
-    else
-      ISR_Timer.setTimeout(TimerInterval[i], irqCallbackFunc[i]);
+		// Set even timer one shot, odd timers run forever
+		if ( i % 2 )
+			ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
+		else
+			ISR_Timer.setTimeout(TimerInterval[i], irqCallbackFunc[i]);
+
 #endif
-  }
+	}
 
-  // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
-  simpleTimer.setInterval(SIMPLE_TIMER_MS, simpleTimerDoingSomething2s);
+	// You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
+	simpleTimer.setInterval(SIMPLE_TIMER_MS, simpleTimerDoingSomething2s);
 }
 
 #define BLOCKING_TIME_MS      10000L
 
 void loop()
 {
-  // This unadvised blocking task is used to demonstrate the blocking effects onto the execution and accuracy to Software timer
-  // You see the time elapse of ISR_Timer still accurate, whereas very unaccurate for Software Timer
-  // The time elapse for 2000ms software timer now becomes 3000ms (BLOCKING_TIME_MS)
-  // While that of ISR_Timer is still prefect.
-  delay(BLOCKING_TIME_MS);
+	// This unadvised blocking task is used to demonstrate the blocking effects onto the execution and accuracy to Software timer
+	// You see the time elapse of ISR_Timer still accurate, whereas very unaccurate for Software Timer
+	// The time elapse for 2000ms software timer now becomes 3000ms (BLOCKING_TIME_MS)
+	// While that of ISR_Timer is still prefect.
+	delay(BLOCKING_TIME_MS);
 
-  // You need this Software timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary
-  // You don't need to and never call ISR_Timer.run() here in the loop(). It's already handled by ISR timer.
-  simpleTimer.run();
+	// You need this Software timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary
+	// You don't need to and never call ISR_Timer.run() here in the loop(). It's already handled by ISR timer.
+	simpleTimer.run();
 }

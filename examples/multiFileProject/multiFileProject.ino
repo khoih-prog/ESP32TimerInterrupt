@@ -10,11 +10,11 @@
 // To demo how to include files in multi-file Projects
 
 #if !defined( ESP32 )
-  #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
+	#error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP32_TIMER_INTERRUPT_VERSION_MIN_TARGET      "ESP32TimerInterrupt v2.2.0"
-#define ESP32_TIMER_INTERRUPT_VERSION_MIN             2002000
+#define ESP32_TIMER_INTERRUPT_VERSION_MIN_TARGET      "ESP32TimerInterrupt v2.3.0"
+#define ESP32_TIMER_INTERRUPT_VERSION_MIN             2003000
 
 #include "multiFileProject.h"
 
@@ -24,37 +24,38 @@
 
 void doingSomething1()
 {
-  // Replace or comment out Serial.println() if crashed
-  Serial.println("doingSomething1 triggered");
+	// Replace or comment out Serial.println() if crashed
+	Serial.println("doingSomething1 triggered");
 }
 
-void setup() 
+void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT);
-  
-  Serial.begin(115200);
-  while (!Serial);
+	Serial.begin(115200);
 
-  delay(500);
-  
-  Serial.println("\nStart multiFileProject");
-  Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+	while (!Serial && millis() < 5000);
+
+	delay(500);
+
+	Serial.println("\nStart multiFileProject");
+	Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
 
 #if defined(ESP32_TIMER_INTERRUPT_VERSION_MIN)
-  if (ESP32_TIMER_INTERRUPT_VERSION_INT < ESP32_TIMER_INTERRUPT_VERSION_MIN)
-  {
-    Serial.print("Warning. Must use this example on Version equal or later than : ");
-    Serial.println(ESP32_TIMER_INTERRUPT_VERSION_MIN_TARGET);
-  }
-#endif
-  
-  setupISR();  // in multifileProject.cpp
 
-  ISR_Timer.setTimeout(5000, doingSomething1);
+	if (ESP32_TIMER_INTERRUPT_VERSION_INT < ESP32_TIMER_INTERRUPT_VERSION_MIN)
+	{
+		Serial.print("Warning. Must use this example on Version equal or later than : ");
+		Serial.println(ESP32_TIMER_INTERRUPT_VERSION_MIN_TARGET);
+	}
+
+#endif
+
+	setupISR();  // in multifileProject.cpp
+
+	ISR_Timer.setTimeout(5000, doingSomething1);
 }
 
-void loop() 
+void loop()
 {
-  // put your main code here, to run repeatedly:
-  delay(1);
+	// put your main code here, to run repeatedly:
+	delay(1);
 }

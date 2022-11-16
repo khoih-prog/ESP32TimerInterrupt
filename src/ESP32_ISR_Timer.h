@@ -9,10 +9,10 @@
   The ESP32, ESP32_S2, ESP32_S3, ESP32_C3 have two timer groups, TIMER_GROUP_0 and TIMER_GROUP_1
   1) each group of ESP32, ESP32_S2, ESP32_S3 has two general purpose hardware timers, TIMER_0 and TIMER_1
   2) each group of ESP32_C3 has ony one general purpose hardware timer, TIMER_0
-  
-  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers. 
-  The timer counters can be configured to count up or down and support automatic reload and software reload. 
-  They can also generate alarms when they reach a specific value, defined by the software. 
+
+  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers.
+  The timer counters can be configured to count up or down and support automatic reload and software reload.
+  They can also generate alarms when they reach a specific value, defined by the software.
   The value of the counter can be read by the software program.
 
   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
@@ -28,8 +28,8 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.2.0
-  
+  Version: 2.3.0
+
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.0   K Hoang      23/11/2019 Initial coding
@@ -48,6 +48,7 @@
   2.0.2   K Hoang      16/06/2022 Add support to new Adafruit boards
   2.1.0   K Hoang      03/08/2022 Suppress errors and warnings for new ESP32 core
   2.2.0   K Hoang      11/08/2022 Add support and suppress warnings for ESP32_C3, ESP32_S2 and ESP32_S3 boards
+  2.3.0   K Hoang      16/11/2022 Fix doubled time for ESP32_C3, ESP32_S2 and ESP32_S3
 *****************************************************************************************************************************/
 
 #pragma once

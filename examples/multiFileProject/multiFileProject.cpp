@@ -25,39 +25,39 @@ ESP32_ISR_Timer ISR_Timer;
 // and you can't use float calculation inside ISR
 // Only OK in core v1.0.6-
 bool IRAM_ATTR TimerHandler(void * timerNo)
-{ 
-  static bool toggle  = false;
-  static int timeRun  = 0;
+{
+	static bool toggle  = false;
+	static int timeRun  = 0;
 
-  ISR_Timer.run();
+	ISR_Timer.run();
 
-  // Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
-  if (++timeRun == ((LED_TOGGLE_INTERVAL_MS * 1000) / HW_TIMER_INTERVAL_US) )
-  {
-    timeRun = 0;
+	// Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
+	if (++timeRun == ((LED_TOGGLE_INTERVAL_MS * 1000) / HW_TIMER_INTERVAL_US) )
+	{
+		timeRun = 0;
 
-    //timer interrupt toggles pin LED_BUILTIN
-    digitalWrite(LED_BUILTIN, toggle);
-    toggle = !toggle;
-  }
+		//timer interrupt toggles pin LED_BUILTIN
+		digitalWrite(LED_BUILTIN, toggle);
+		toggle = !toggle;
+	}
 
-  return true;
+	return true;
 }
 
 void doingSomething0()
 {
-  // Replace or comment out Serial.println() if crashed
-  Serial.println("doingSomething0 triggered");
+	// Replace or comment out Serial.println() if crashed
+	Serial.println("doingSomething0 triggered");
 }
 
 void setupISR()
 {
-  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler))
-  {
-    Serial.println(F("Starting ITimer OK")); 
-  }
-  else
-    Serial.println(F("Can't set ITimer. Select another freq. or timer"));
+	if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler))
+	{
+		Serial.println(F("Starting ITimer OK"));
+	}
+	else
+		Serial.println(F("Can't set ITimer. Select another freq. or timer"));
 
-  ISR_Timer.setInterval(3000, doingSomething0);
+	ISR_Timer.setInterval(3000, doingSomething0);
 }

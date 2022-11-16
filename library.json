@@ -1,6 +1,6 @@
 {
   "name": "ESP32TimerInterrupt",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "keywords": "timing, device, control, timer, interrupt, timer-interrupt, hardware, isr, isr-based, hardware-timer, isr-timer, isr-based-timer, mission-critical, accuracy, precise, non-blocking, esp32, esp32-s2, esp32-c3, esp32-s3",
   "description": "This library enables you to use Interrupt from Hardware Timers on ESP32-based (including ESP32_S2, ESP32_S3 and ESP32_C3) boards. It now supports 16 ISR-based timers, while consuming only 1 Hardware Timer. Timers interval is very long (ulong millisecs). The most important feature is they're ISR-based timers. Therefore, their executions are not blocked by bad-behaving functions or tasks. This important feature is absolutely necessary for mission-critical tasks. These hardware timers, using interrupt, still work even if other functions are blocking. Moreover, they are much more precise (certainly depending on clock frequency accuracy) than other software timers using millis() or micros(). That's necessary if you need to measure some data requiring better accuracy.",
   "authors":

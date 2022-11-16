@@ -9,10 +9,10 @@
   The ESP32, ESP32_S2, ESP32_S3, ESP32_C3 have two timer groups, TIMER_GROUP_0 and TIMER_GROUP_1
   1) each group of ESP32, ESP32_S2, ESP32_S3 has two general purpose hardware timers, TIMER_0 and TIMER_1
   2) each group of ESP32_C3 has ony one general purpose hardware timer, TIMER_0
-  
-  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers. 
-  The timer counters can be configured to count up or down and support automatic reload and software reload. 
-  They can also generate alarms when they reach a specific value, defined by the software. 
+
+  All the timers are based on 64-bit counters (except 54-bit counter for ESP32_S3 counter) and 16 bit prescalers.
+  The timer counters can be configured to count up or down and support automatic reload and software reload.
+  They can also generate alarms when they reach a specific value, defined by the software.
   The value of the counter can be read by the software program.
 
   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
@@ -51,7 +51,7 @@
 */
 
 #if !defined( ESP32 )
-  #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
+	#error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
 
 // These define's must be placed at the beginning before #include "ESP32TimerInterrupt.h"
@@ -64,17 +64,18 @@
 
 // Don't use PIN_D1 in core v2.0.0 and v2.0.1. Check https://github.com/espressif/arduino-esp32/issues/5868
 
-#ifndef LED_BUILTIN
-  #define LED_BUILTIN       2
-#endif
-
 #ifndef LED_BLUE
-  #define LED_BLUE          25
+	#define LED_BLUE          25
 #endif
 
 #ifndef LED_RED
-  #define LED_RED           27
+	#define LED_RED           27
 #endif
+
+// Don't use PIN_D1 in core v2.0.0 and v2.0.1. Check https://github.com/espressif/arduino-esp32/issues/5868
+// Don't use PIN_D2 with ESP32_C3 (crash)
+#define PIN_D19             19        // Pin D19 mapped to pin GPIO9 of ESP32
+#define PIN_D3               3        // Pin D3 mapped to pin GPIO3/RX0 of ESP32
 
 #define HW_TIMER_INTERVAL_MS      1L
 
@@ -92,30 +93,30 @@ ESP32_ISR_Timer ISR_Timer;
 // and you can't use float calculation inside ISR
 // Only OK in core v1.0.6-
 bool IRAM_ATTR TimerHandler(void * timerNo)
-{ 
-  static bool toggle  = false;
-  static bool started = false;
-  static int timeRun  = 0;
+{
+	static bool toggle  = false;
+	static bool started = false;
+	static int timeRun  = 0;
 
-  ISR_Timer.run();
+	ISR_Timer.run();
 
-  // Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
-  if (++timeRun == (LED_TOGGLE_INTERVAL_MS / HW_TIMER_INTERVAL_MS) )
-  {
-    timeRun = 0;
+	// Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
+	if (++timeRun == (LED_TOGGLE_INTERVAL_MS / HW_TIMER_INTERVAL_MS) )
+	{
+		timeRun = 0;
 
-    if (!started)
-    {
-      started = true;
-      pinMode(LED_BUILTIN, OUTPUT);
-    }
+		if (!started)
+		{
+			started = true;
+			pinMode(PIN_D19, OUTPUT);
+		}
 
-    //timer interrupt toggles pin LED_BUILTIN
-    digitalWrite(LED_BUILTIN, toggle);
-    toggle = !toggle;
-  }
-  
-  return true;
+		//timer interrupt toggles pin PIN_D19
+		digitalWrite(PIN_D19, toggle);
+		toggle = !toggle;
+	}
+
+	return true;
 }
 
 #define NUMBER_ISR_TIMERS         16
@@ -123,8 +124,8 @@ bool IRAM_ATTR TimerHandler(void * timerNo)
 // You can assign any interval for any timer here, in milliseconds
 uint32_t TimerInterval[NUMBER_ISR_TIMERS] =
 {
-  1000L,  2000L,  3000L,  4000L,  5000L,  6000L,  7000L,  8000L,
-  9000L, 10000L, 11000L, 12000L, 13000L, 14000L, 15000L, 16000L
+	1000L,  2000L,  3000L,  4000L,  5000L,  6000L,  7000L,  8000L,
+	9000L, 10000L, 11000L, 12000L, 13000L, 14000L, 15000L, 16000L
 };
 
 typedef void (*irqCallback)  ();
@@ -199,10 +200,10 @@ void doingSomething15()
 
 irqCallback irqCallbackFunc[NUMBER_ISR_TIMERS] =
 {
-  doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3, 
-  doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7, 
-  doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
-  doingSomething12, doingSomething13, doingSomething14, doingSomething15
+	doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3,
+	doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7,
+	doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
+	doingSomething12, doingSomething13, doingSomething14, doingSomething15
 };
 
 ////////////////////////////////////////////////
@@ -219,56 +220,63 @@ SimpleTimer simpleTimer;
 // 2. Very long "do", "while", "for" loops without predetermined exit time.
 void simpleTimerDoingSomething2s()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  Serial.print(F("simpleTimerDoingSomething2s: Delta programmed ms = ")); Serial.print(SIMPLE_TIMER_MS);
-  Serial.print(F(", actual = ")); Serial.println(millis() - previousMillis);
-  
-  previousMillis = millis();
+	static unsigned long previousMillis = startMillis;
+
+	Serial.print(F("simpleTimerDoingSomething2s: Delta programmed ms = "));
+	Serial.print(SIMPLE_TIMER_MS);
+	Serial.print(F(", actual = "));
+	Serial.println(millis() - previousMillis);
+
+	previousMillis = millis();
 }
 
 void setup()
 {
-  Serial.begin(115200);
-  while (!Serial);
+	Serial.begin(115200);
 
-  delay(200);
+	while (!Serial && millis() < 5000);
 
-  Serial.print(F("\nStarting ISR_16_Timers_Array on ")); Serial.println(ARDUINO_BOARD);
-  Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
-  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
+  delay(500);
 
-  // Interval in microsecs
-  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
-  {
-    startMillis = millis();
-    Serial.print(F("Starting ITimer OK, millis() = ")); Serial.println(startMillis);
-  }
-  else
-    Serial.println(F("Can't set ITimer. Select another freq. or timer"));
+	Serial.print(F("\nStarting ISR_16_Timers_Array on "));
+	Serial.println(ARDUINO_BOARD);
+	Serial.println(ESP32_TIMER_INTERRUPT_VERSION);
+	Serial.print(F("CPU Frequency = "));
+	Serial.print(F_CPU / 1000000);
+	Serial.println(F(" MHz"));
 
-  // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
-  // You can use up to 16 timer for each ISR_Timer
-  for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
-  {
-    ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]); 
-  }
+	// Interval in microsecs
+	if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
+	{
+		startMillis = millis();
+		Serial.print(F("Starting ITimer OK, millis() = "));
+		Serial.println(startMillis);
+	}
+	else
+		Serial.println(F("Can't set ITimer. Select another freq. or timer"));
 
-  // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
-  simpleTimer.setInterval(SIMPLE_TIMER_MS, simpleTimerDoingSomething2s);
+	// Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
+	// You can use up to 16 timer for each ISR_Timer
+	for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
+	{
+		ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
+	}
+
+	// You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
+	simpleTimer.setInterval(SIMPLE_TIMER_MS, simpleTimerDoingSomething2s);
 }
 
 #define BLOCKING_TIME_MS      10000L
 
 void loop()
 {
-  // This unadvised blocking task is used to demonstrate the blocking effects onto the execution and accuracy to Software timer
-  // You see the time elapse of ISR_Timer still accurate, whereas very unaccurate for Software Timer
-  // The time elapse for 2000ms software timer now becomes 3000ms (BLOCKING_TIME_MS)
-  // While that of ISR_Timer is still prefect.
-  delay(BLOCKING_TIME_MS);
+	// This unadvised blocking task is used to demonstrate the blocking effects onto the execution and accuracy to Software timer
+	// You see the time elapse of ISR_Timer still accurate, whereas very unaccurate for Software Timer
+	// The time elapse for 2000ms software timer now becomes 3000ms (BLOCKING_TIME_MS)
+	// While that of ISR_Timer is still prefect.
+	delay(BLOCKING_TIME_MS);
 
-  // You need this Software timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary
-  // You don't need to and never call ISR_Timer.run() here in the loop(). It's already handled by ISR timer.
-  simpleTimer.run();
+	// You need this Software timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary
+	// You don't need to and never call ISR_Timer.run() here in the loop(). It's already handled by ISR timer.
+	simpleTimer.run();
 }

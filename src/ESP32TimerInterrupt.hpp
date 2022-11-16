@@ -29,7 +29,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 2.2.0
+  Version: 2.3.0
   
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -49,6 +49,7 @@
   2.0.2   K Hoang      16/06/2022 Add support to new Adafruit boards
   2.1.0   K Hoang      03/08/2022 Suppress errors and warnings for new ESP32 core
   2.2.0   K Hoang      11/08/2022 Add support and suppress warnings for ESP32_C3, ESP32_S2 and ESP32_S3 boards
+  2.3.0   K Hoang      16/11/2022 Fix doubled time for ESP32_C3, ESP32_S2 and ESP32_S3
 *****************************************************************************************************************************/
 
 #pragma once
@@ -95,13 +96,13 @@
 #endif
 
 #ifndef ESP32_TIMER_INTERRUPT_VERSION
-  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.2.0"
+  #define ESP32_TIMER_INTERRUPT_VERSION          "ESP32TimerInterrupt v2.3.0"
   
   #define ESP32_TIMER_INTERRUPT_VERSION_MAJOR     2
-  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     2
+  #define ESP32_TIMER_INTERRUPT_VERSION_MINOR     3
   #define ESP32_TIMER_INTERRUPT_VERSION_PATCH     0
 
-  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2002000
+  #define ESP32_TIMER_INTERRUPT_VERSION_INT      2003000
 #endif
 
 #ifndef TIMER_INTERRUPT_DEBUG
@@ -236,12 +237,12 @@ class ESP32TimerInterrupt;
 typedef ESP32TimerInterrupt ESP32Timer;
 
 #if USING_ESP32_C3_TIMERINTERRUPT
-  #define MAX_ESP32_NUM_TIMERS      2
+  #define MAX_ESP32_NUM_TIMERS      				2
 #else
-  #define MAX_ESP32_NUM_TIMERS      4
+  #define MAX_ESP32_NUM_TIMERS      				4
 #endif
 
-#define TIMER_DIVIDER             80                                //  Hardware timer clock divider
+#define TIMER_DIVIDER             					80			//  Hardware timer clock divider
 // TIMER_BASE_CLK = APB_CLK_FREQ = Frequency of the clock on the input of the timer groups
 #define TIMER_SCALE               (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
 
@@ -267,10 +268,13 @@ typedef struct
   //timer_autoreload_t  auto_reload;
 } timer_info_t;
 
+// Warning: TIMER_SRC_CLK_XTAL only good for ESP32
+// Use TIMER_SRC_CLK_APB for ESP32_C3, ESP32_S2 and ESP32_S3
+
 class ESP32TimerInterrupt
 {
   private:
-  
+   
     timer_config_t stdConfig = 
     {
       .alarm_en     = TIMER_ALARM_EN,       //enable timer alarm
@@ -279,8 +283,12 @@ class ESP32TimerInterrupt
       .counter_dir  = TIMER_COUNT_UP,       //counts from 0 to counter value
       .auto_reload  = TIMER_AUTORELOAD_EN,  //reloads counter automatically
       .divider      = TIMER_DIVIDER,
-#if SOC_TIMER_GROUP_SUPPORT_XTAL
+#if (SOC_TIMER_GROUP_SUPPORT_XTAL)
+	#if (USING_ESP32_TIMERINTERRUPT)
       .clk_src      = TIMER_SRC_CLK_XTAL    //Use XTAL as source clock
+	#else
+			.clk_src      = TIMER_SRC_CLK_APB    	//Use APB as source clock
+	#endif
 #endif      
     };
 
